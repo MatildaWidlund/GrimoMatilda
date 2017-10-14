@@ -34,14 +34,14 @@ elem_t copy_function (elem_t copy)
 {
     return copy;
 }
-/*
+
 void test_list_length()
 { list_t *list = list_new();
     
-    for(i = 0; i <10; ++i) list_insert(list, i, NULL);
+    for(int i = 0; i <10; ++i) list_insert(list, i, NULL);
     CU_ASSERT_TRUE(list_length(list) == 10);
     
-    for (i = 0; i < 10; ++i) list_insert(list, i, NULL);
+    for (int i = 0; i < 10; ++i) list_insert(list, i, NULL);
     CU_ASSERT_TRUE(list_length(list)==20);
     
     list remove(list, 0, NULL);
@@ -54,7 +54,7 @@ void test_list_length()
     
     list_delete(list, list_action, true);
 }
-*/
+
 
 int main()
 {
