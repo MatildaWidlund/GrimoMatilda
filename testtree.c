@@ -18,40 +18,42 @@ elem_t string_copy(elem_t elem)
   
 }
 
-void key_free (key_free_fun key)
+void free_key (elem_t key)
 {
-  if (key == NULL) {
-    return;
-  }
-  else {
-    free(key);
-  }
-  return;
+ free(key.p);
 }
 
-void elem_free(elem_t *value)
+void free_elem(elem_t elem)
 {
-  if (value == NULL ) {
-    return;
-  }
-  else {
-    free(value);  
-  }
-  return;
+free(elem.p);
 }
 
-int compare(elem_t a, elem_t b)
+int str_compare(elem_t a, elem_t b)
 {
-  if (strcmp(a.p, b.p) >0)
+  if (strcmp((char*)a.p, (char*)b.p) >0)
     {
       return 2 ;
     }
-  else if (strcmp(a.p, b.p) < 0)
+  else if (strcmp((char*)a.p, (char*)b.p) < 0)
       {
       return 1;
     }
   else return 0; 
 }
+
+int int_compare(elem_t a, elem_t b)
+{
+  if (a.i == b.i)
+    {return 0;}
+  else if  (a.i > b.i)
+    {return 1;}
+  else 
+    {return -1;} 
+}
+  
+
+
+
 
 //för att göra delete valid
 /*
@@ -80,13 +82,13 @@ if (elem != NULL) {
 int main (void)
 {
   
-  tree_t * tree = tree_new(NULL, NULL, NULL, compare);
+  tree_t * tree = tree_new(NULL,free_key, free_elem, int_compare);
 
-  elem_t elem1 = {.p="a"};
-  elem_t elem2 = {.p="b"};
-  elem_t elem3 = {.p="c"};
-  elem_t elem4 = {.p="d"};
-  elem_t elem5 = {.p="e"};
+  elem_t elem1 = {.i=1};
+  elem_t elem2 = {.i=2};
+  elem_t elem3 = {.i=3};
+  elem_t elem4 = {.i=4};
+  elem_t elem5 = {.i=5};
   tree_key_t key1 = {.i=6};
   tree_key_t key7 = {.i=7};
   tree_key_t key8 = {.i=8};
@@ -109,8 +111,8 @@ int main (void)
   tree_insert(tree, key10, elem5);
   printf("%d\n",tree_size(tree));
   printf("%s %d\n","djuppet på träd", tree_depth(tree));
-
-  // tree_delete(tree, true, true);
-  //printf("%s %d\n", "size efter delete" , tree_size(tree));
+ printf("%s %d\n", "size före delete" , tree_size(tree));
+  tree_delete(tree, true, true);
+  printf("%s %d\n", "size efter delete" , tree_size(tree));
   return 0;
 }

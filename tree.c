@@ -35,6 +35,10 @@ typedef struct tree {
 typedef bool(*traverse_func)(node_t *node, void *p);
 #define UNUSED(x) (void)(x)
 
+
+  
+  //remove tree & free
+
 /* INTERNAL FUNCTIONS */
 // - - - - - - 
 //TODO: ADDERA IN INTERNAL FUNCTIONS NÄR DET BEHÖVS...
@@ -82,37 +86,42 @@ bool trav_fun (tree_t *tree, traverse_func fun, void *data)
   
 }
 
-void _node_delete(node_t* node, key_free_fun free_key) {//har jag tänkt rätt att key_free_fun kan användas för att freea hela noden?
-  if (node == NULL) return;
-
-  if (node->left != NULL) {
-    _node_delete(node->left, free_key);
-    free(node->left);
-  }
-
-  if (node->right != NULL) {
-    _node_delete(node->right, free_key);
-    free(node->right);
-  }
+void deleter (tree_t *tree, node_t *node, bool delete_keys, bool delete_elements)
+{
+if (delete_keys) {
+  tree->free_key(node->key);
+ }
+if (delete_elements) {
+  tree->free_elem(node->elem);
+ }
+ free(node);
 }
 
-bool _free_elem (node_t *node, void *p)
+void  _tree_delete_aux(tree_t *tree, node_t *node, bool delete_keys, bool delete_elements)
 {
-  UNUSED(p);
+  if (node == NULL)
+    {
+      return;
+    }
+ else
+    {
+      
+      _tree_delete_aux(tree,node->right, delete_keys, delete_elements);
+      _tree_delete_aux(tree,node->left, delete_keys, delete_elements);
+      deleter(tree, node, delete_keys, delete_elements);
+    }
   
-  (node)->tree->free_elem((node)->elem);
-  return true;
+  
 }
 
-bool _free_key (node_t *node , void *p)
+void tree_delete(tree_t *tree, bool delete_keys, bool delete_elements)
 {
-  UNUSED(p);
-  node->tree->free_key(node->key);
-  return true;
+  _tree_delete_aux(tree,tree->root, delete_keys, delete_elements);
+  free(tree);
 }
 
 
-node_t *_new_node(elem_t elem, tree_key_t key)
+node_t *_new_node( tree_key_t key,elem_t elem)
 {
   node_t *n = calloc(1, sizeof(node_t));
   
@@ -176,20 +185,20 @@ bool tree_insert_aux(tree_t *tree, node_t **node, tree_key_t key, elem_t elem)
         if (tree->copy != NULL)
           {
             elem_t copy_v = tree->copy(elem);
-            (*node) = _new_node(copy_v, key); 
+            (*node) = _new_node(key, copy_v); 
           }
         else
           {
-          *node = _new_node(elem, key);
+          *node = _new_node(key, elem);
           return true;   
           }
       }
-    if (tree->comp((*node)->elem, elem) == 1)
+    if (tree->comp((*node)->elem, elem) == -1)
       {
         
         tree_insert_aux(tree, &(*node)->left, key, elem);
       }
-    else if(tree->comp((*node)->elem, elem) == 2)
+    else if(tree->comp((*node)->elem, elem) == 1)
       {
         tree_insert_aux(tree, &(*node)->right, key, elem);    
       }
@@ -225,22 +234,6 @@ tree_t* tree_new(element_copy_fun element_copy, key_free_fun key_free, element_f
   }
 
   return tree;
-}
-
-
-void tree_delete(tree_t *tree, bool delete_keys, bool delete_elements)
-{
-  
-  if (delete_keys == true)
-    {
-      trav_fun(tree, _free_elem , NULL);  
-    }
-  if (delete_elements == true)
-    {
-      trav_fun(tree, _free_key, NULL);
-    }
-  free(tree);
-     
 }
 
 
