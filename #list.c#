@@ -193,19 +193,20 @@ int list_contains(list_t *list, elem_t elem)
             }
         }
     }
-  else{
-
-  for (int index =0; index <list->length && *cursor; ++index)
+  else
     {
-      if((*cursor)->value.i == elem.i)
+
+      for (int index =0; index <list->length && *cursor; ++index)
         {
-          return index;
-        }
-      else
-        {
-          cursor = &(*cursor)->next;
-        }
-    }}
+          if((*cursor)->value.i == elem.i)
+            {
+              return index;
+            }
+          else
+            {
+              cursor = &(*cursor)->next;
+            }
+        }}
   return -1;
   
 }
