@@ -94,6 +94,7 @@ if (delete_keys) {
 if (delete_elements) {
   tree->free_elem(node->elem);
  }
+ printf("%s\n","deleter, node" );
  free(node);
 }
 
@@ -114,11 +115,6 @@ void  _tree_delete_aux(tree_t *tree, node_t *node, bool delete_keys, bool delete
   
 }
 
-void tree_delete(tree_t *tree, bool delete_keys, bool delete_elements)
-{
-  _tree_delete_aux(tree,tree->root, delete_keys, delete_elements);
-  free(tree);
-}
 
 
 node_t *_new_node( tree_key_t key,elem_t elem)
@@ -260,3 +256,77 @@ bool tree_insert(tree_t *tree, tree_key_t key, elem_t elem)
 {
   return tree_insert_aux(tree, &tree->root, key, elem);
 }
+
+bool tree_has_key(tree_t *tree, tree_key_t key)
+{
+  if (tree == NULL || tree->root == NULL)
+    {
+      printf("%s\n","tree is empty" );
+      return false;
+    }
+  node_t *node = tree->root;
+  while (node != NULL)
+    {
+      int result = tree->comp(node->key, key);
+      if (result > 0)
+        {
+          printf("%s\n","node bigger" );
+          node = node->right;
+        }
+      else if (result < 0)
+        {
+          printf("%s\n","node smaller" );
+          node = node->left;
+        }
+      else {
+        printf("%s\n","key exists" );
+        return true;
+      }   
+    }
+  printf("%s\n","node doesnt exist" );
+  return false;
+}
+
+
+bool tree_get(tree_t *tree, tree_key_t key, elem_t *result)
+{
+  result = NULL;
+  
+  if (tree == NULL || tree->root == NULL)
+    {
+      printf("%s\n","tree is empty" );
+      return false;
+    }
+  node_t *node = tree->root;
+  while (node != NULL)
+    {
+      int res = tree->comp(node->key, key);
+      if (res > 0)
+        {
+          printf("%s\n","node bigger" );
+          node = node->right;
+        }
+      else if (res < 0)
+        {
+          printf("%s\n","node smaller" );
+          node = node->left;
+        }
+      else {
+        printf("%s\n","key exists" );
+        result = &node->elem;
+        printf("%d\n",(result->i));
+        return true;
+      }   
+    }
+  printf("%s\n","node doesnt exist" );
+  return false;
+}
+
+
+void tree_delete(tree_t *tree, bool delete_keys, bool delete_elements)
+{
+  _tree_delete_aux(tree,tree->root, delete_keys, delete_elements);
+  free(tree);
+}
+
+
