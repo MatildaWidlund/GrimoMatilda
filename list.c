@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <assert.h>
+
 typedef union element elem_t;
 typedef struct link{
     elem_t value;
@@ -26,8 +27,25 @@ elem_t list_no_copy(elem_t elem)
 }
 
 static
+
 int convert_index(int index, int length)
 {
+  if (index <0 && length == 0)
+    {
+      return 0;
+    }
+  else if (index <0)
+    {
+      return length + index;
+    }
+  else if (index > length)
+    {
+      return length;
+    }
+  return index;
+}
+  
+  /*
   if (index <0)
     
     {return convert_index(index + length, length);
@@ -37,12 +55,12 @@ int convert_index(int index, int length)
     }
   return index;
 }
-
+*/
 
 static
 link_t *link_new(elem_t elem, link_t *next)
 {
-  link_t *link = calloc(1, sizeof(*link));
+  link_t *link = calloc(1, sizeof(link_t)); // (*link)?
   if (link)
     {
       *link = (link_t) {.value = elem, .next = next};
@@ -53,7 +71,8 @@ link_t *link_new(elem_t elem, link_t *next)
 static // vandrar i listan och cursorn pekar på nästa adress
 link_t **list_find(list_t *list, int index)
 { link_t **cursor = &(list->first);
-  int converted_index = (0 <= index && index < list->length) ? index : convert_index(index, list-> length);
+  int converted_index =
+    (0 <= index && index < list->length) ? index : convert_index(index, list->length);
 
   for (int i = 0; i < converted_index && *cursor; ++i)
     {
@@ -67,20 +86,23 @@ link_t **list_find(list_t *list, int index)
 list_t *list_new(element_copy_fun copy, element_free_fun free, element_comp_fun compare)
 {
   list_t *list = calloc(1, sizeof(list_t));
-    if (list)
+  if (list)
     { *list = (list_t){
-.copy = copy ? copy : list_no_copy,
+        .copy = copy ? copy : list_no_copy,
         .free = free,
-        .compare = compare};
+        .compare = compare,
+        .length = 0
+      };
     }
-    return list;
+  return list;
 }
 
 
 
 void list_insert(list_t *list, int index, elem_t elem)
 {
-  int converted_index = (0<= index && index < list->length) ? index : convert_index(index, list->length);
+  int converted_index =
+    (0<= index && index < list->length) ? index : convert_index(index, list->length +1);
 
   link_t **cursor = list_find(list, converted_index);
   if (*cursor || converted_index == list->length)
@@ -92,7 +114,7 @@ void list_insert(list_t *list, int index, elem_t elem)
 
 void list_append(list_t *list, elem_t elem)
 {
-  list_insert(list, list->length, elem);
+  list_insert(list, -1, elem);
 }
 
 void list_prepend(list_t *list, elem_t elem)
@@ -121,18 +143,18 @@ void list_remove(list_t* list, int index, bool delete)
           list->free(link_to_remove->value);
         }
       free(link_to_remove);
+      --list->length;
   }
 }
 
 bool list_get(list_t *list, int index, elem_t *result)
 {
-  if (list == NULL) {return false;}
 
   int converted_index = (0<= index && index < list->length) ? index : convert_index(index, list->length);
   link_t **cursor = list_find(list, converted_index);
   
   if (*cursor)
-    {result = (*cursor) ? & (*cursor)->value : NULL;
+    { *result = (*cursor)->value; //? & (*cursor)->value : NULL;
       return true;
     }
   return false;
@@ -141,12 +163,20 @@ bool list_get(list_t *list, int index, elem_t *result)
 
 bool list_first(list_t *list, elem_t *result)
 {
-  return list_get(list,0, result);
+  if(list_get(list,0, result))
+    {
+      return true;
+    }
+    return false;
 }
 
 bool list_last(list_t *list, elem_t *result)
 {
-  return list_get(list, list->length-1, result);
+  if (list_get(list, list->length-1, result))
+    {
+      return true;
+    }
+  return false;
 }
 
 int list_length(list_t *list)
@@ -193,19 +223,20 @@ int list_contains(list_t *list, elem_t elem)
             }
         }
     }
-  else{
-
-  for (int index =0; index <list->length && *cursor; ++index)
+  else
     {
-      if((*cursor)->value.i == elem.i)
+
+      for (int index =0; index <list->length && *cursor; ++index)
         {
-          return index;
-        }
-      else
-        {
-          cursor = &(*cursor)->next;
-        }
-    }}
+          if((*cursor)->value.i == elem.i)
+            {
+              return index;
+            }
+          else
+            {
+              cursor = &(*cursor)->next;
+            }
+        }}
   return -1;
   
 }
