@@ -165,7 +165,7 @@ void add_shelf_to_item(tree_t* tree, char* item_name) {
   char* shelf_name = ask_question_shelf("Hyllplats: ");
 
   int t_size = tree_size(tree);
-  char** t_keys = tree_keys(tree);
+  char** t_keys = tree_keys(tree); // varför har vi kvar denna funktion?
   
   bool done = false;
   bool add_shelf = true;

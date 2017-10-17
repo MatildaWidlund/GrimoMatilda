@@ -20,12 +20,12 @@ elem_t string_copy(elem_t elem)
 
 void free_key (elem_t key)
 {
- free(key.p);
+  return;
 }
 
 void free_elem(elem_t elem)
 {
-free(elem.p);
+  return;
 }
 
 int str_compare(elem_t a, elem_t b)
@@ -83,7 +83,7 @@ int main (void)
 {
   
   tree_t * tree = tree_new(NULL,free_key, free_elem, int_compare);
-
+  elem_t *result = NULL;
   elem_t elem1 = {.i=1};
   elem_t elem2 = {.i=2};
   elem_t elem3 = {.i=3};
@@ -112,7 +112,16 @@ int main (void)
   printf("%d\n",tree_size(tree));
   printf("%s %d\n","djuppet på träd", tree_depth(tree));
  printf("%s %d\n", "size före delete" , tree_size(tree));
-  tree_delete(tree, true, true);
+ tree_has_key(tree, key10);
+ tree_get(tree, key10, result);
+ 
+ tree_remove(tree, key10, result);
+ printf("%s\n","borttagen key 10" );
+ tree_has_key(tree, key10);
+ tree_get(tree, key10, result);
+ 
+ tree_delete(tree, true, true);
   printf("%s %d\n", "size efter delete" , tree_size(tree));
+  
   return 0;
 }

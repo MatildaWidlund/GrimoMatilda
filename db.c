@@ -40,12 +40,12 @@ elem_t shelf_copy(elem_t shelf)
   return result;
 }
 
-elem_t shelf_free(elem_t shelf)
+void shelf_free(elem_t shelf)
 {
   free(shelf.p);
 }
 
-size_t shelf_compare(elem_t a, elem_t b) //size_t??? int???
+int shelf_compare(elem_t a, elem_t b) //size_t??? int???
 {
   shelf_t *s1 = a.p;
   shelf_t *s2 = b.p;
@@ -311,6 +311,19 @@ void add_new_item(tree_t *tree, char *name)
 }
 
 
+void add_item(tree_t *tree)
+{
+  puts("\nLÄGG TILL EN VARA");
+  char *name = ask_question_string("Varunamn");
+  tree_key_t key;
+  name = key.p;
+
+  if (tree_has_key(tree, key))
+    {
+      add_shelf_to_item2(tree, name);
+    }
+  return;
+}
 
 
 void remove_item()
@@ -505,6 +518,107 @@ void edit_shelf(tree_t *tree, shelf_t *shelf)
   return;
 }
 
+item_t *copy_item(item_t *original)
+{
+  if (original == NULL) return NULL;
+
+  char *name = strdup(original->name);
+  char *desc = strdup(original->desc);
+
+  list_t* shelves = list_new(shelf_copy, shelf_free, shelf_compare);
+  int length = list_length(original->shelves);
+
+  for (int i = 0; i < length; ++i)
+    {
+      shelf_t *source = NULL;
+      elem_t elem;
+      source = elem.p;
+      list_get(original->shelves, i, &elem);
+      char *name = strdup(source->name);
+      int amount = source->amount;
+
+      shelf_t *copy = create_shelf(name, amount);
+      elem_t element;
+      copy = element.p;
+      list_append(shelves, element);
+    }
+  item_t *item = create_item(name, desc, original->price, shelves);
+  return item;
+}
+
+
+void edit_item(tree_t *tree, struct action *undo)
+{
+  item_t *item = select_item(tree);
+  if(item == NULL) return;
+
+  item_t *old = copy_item(item);
+  undo->old = old;
+  undo->new = item;
+  undo->type = EDIT;
+
+  print_menu_edit();
+
+  char c = toupper(ask_question_char("skriv in en bokstav: "));
+
+  switch (c)
+    {
+    case 'B':
+      printf("Nuvarande beskrivning: %s\n", item->desc);
+      char *str = ask_question_string("Ny beskrivning: ");
+      item->desc = str;
+      break;
+
+    case 'P':
+      printf("Nuvarande pris: %d \n", item->price);
+      int price = ask_question_int("Nytt pris: ");
+      item->price = price;
+      break;
+
+    case 'L':
+      printf("Nuvarande hyllor: \n");
+      list_t *shelves = item->shelves;
+      int length = list_length(shelves);
+
+      for (int i = 0; i < length; ++i)
+        {
+          shelf_t *shelf = NULL;
+          elem_t elem;
+          shelf = elem.p;
+          list_get(shelves, i, &elem);
+          printf("%d) %s: \t%d st\n", i + 1, shelf->name, shelf->amount);
+        }
+      int index = ask_question_int("Skriv in ett index:") -1;
+
+      if (index < 0 || index >= length)
+        {
+          puts("Ogiltigt index!");
+          return;
+        }
+      elem_t element;
+      shelf_t *shelf;
+      shelf = element.p;
+     list_get(shelves, index, &element);
+     edit_shelf(tree, shelf); ///// Vad blir inputen istället list_get
+     break;
+    default:
+      puts("Ogiltig inmatning!");
+      break;
+    }
+  return;
+}
+
+
+void list_db(tree_t *tree)
+{
+  item_t *item = select_item(tree);
+  if (item != NULL)
+    {
+      print_item(item);
+    }
+}
+
+
 /* MENY / EVENTLOOP / MAIN */
 char ask_question_menu(char *question)
 {
@@ -586,12 +700,12 @@ void event_loop(tree_t* tree)
 
 int main(int argc, char* argv[])
 {
-  tree_t *tree = tree_new();
+  tree_t *tree = tree_new(element_copy_fun copy, key_free_fun key_free, element_free_fun elem_free, element_comp_fun compare);
   event_loop(tree);
-  //tree_delete(tree, NULL);
+  tree_delete(tree, true, true); // eller ska det vara false?
   return 0;
 }
 
-/* MENY / EVENTLOOP / MAIN */
+/* END OF: MENY / EVENTLOOP / MAIN */
 
 
