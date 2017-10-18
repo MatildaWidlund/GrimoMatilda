@@ -17,6 +17,9 @@ tree.o: tree.h tree.c
 utils.o: utils.h utils.c
 	$(CMPLR) $(FLAGS_GCC) utils.h utils.c -c
 
+test_list:
+	$(CMPLR) $(CMPLR_FLAGS) -lcunit -I/usr/local/Cellar/cunit/2.1-3/include -L/usr/local/Cellar/cunit/2.1-3/lib test.c list.c
+
 clean:
 	rm -f *~
 	rm -f *.o

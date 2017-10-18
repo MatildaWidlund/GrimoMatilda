@@ -6,7 +6,7 @@
 #include <CUnit/CUnit.h>
 #include <CUnit/Automated.h>
 #include <CUnit/Basic.h>
-
+#include <CUnit/Console.h>
 
 typedef struct item{
 char* name;
