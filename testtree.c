@@ -53,34 +53,9 @@ int int_compare(elem_t a, elem_t b)
   
 
 
-
-
-//för att göra delete valid
-/*
-bool delete_keys (tree_key_t *key)
-{
-if (key != NULL) {
- free(key);
- return true;
- }
- else return false;
-}
-
-bool delete_elements(elem_t *elem)
-{
-if (elem != NULL) {
- free(elem);
- return true;
- }
- else return false;
-}
-*/
-
-
-//bool delete_elements = true;
-
 int main (void)
 {
+ 
   
   tree_t * tree = tree_new(NULL,free_key, free_elem, int_compare);
   elem_t *result = NULL;
@@ -94,6 +69,7 @@ int main (void)
   tree_key_t key8 = {.i=8};
   tree_key_t key9 = {.i=9};
   tree_key_t key10 = {.i=10};
+  
   printf("%d\n",tree_size(tree));
   tree_insert(tree, key1, elem1);
   
@@ -114,14 +90,16 @@ int main (void)
  printf("%s %d\n", "size före delete" , tree_size(tree));
  tree_has_key(tree, key10);
  tree_get(tree, key10, result);
+ printf("%s\n","enter tree_remove" );
  
  tree_remove(tree, key10, result);
  printf("%s\n","borttagen key 10" );
  tree_has_key(tree, key10);
+
  tree_get(tree, key10, result);
  
- tree_delete(tree, true, true);
-  printf("%s %d\n", "size efter delete" , tree_size(tree));
+ //tree_delete(tree, true, true);
+ // printf("%s %d\n", "size efter delete" , tree_size(tree));
   
   return 0;
 }

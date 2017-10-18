@@ -3,6 +3,8 @@
 #include <string.h>
 #include "common.h"
 #include "tree.h"
+#include <assert.h>
+
 
 extern char* strdup(const char*); //behålla denna?
 
@@ -36,14 +38,41 @@ typedef bool(*traverse_func)(node_t *node, void *p);
 #define UNUSED(x) (void)(x)
 
 
-  
-  //remove tree & free
-
 /* INTERNAL FUNCTIONS */
 // - - - - - - 
 //TODO: ADDERA IN INTERNAL FUNCTIONS NÄR DET BEHÖVS...
 // - - - - - -
 
+node_t *get_node_aux(tree_t *tree, node_t *cursor, tree_key_t key)
+{
+  cursor = tree->root;
+   if (tree->comp(cursor->key, key)  == 0)
+      {
+        return cursor;
+      }
+
+   while (tree->comp(cursor->key, key)  != 0)
+     {
+       if (tree->comp(cursor->key, key) > 0)
+      {
+        get_node_aux(tree, cursor->right, key);
+      }
+       else if (tree->comp(cursor->key, key) < 0) {
+      get_node_aux(tree, cursor->left, key);
+    }
+  }
+ return cursor;
+}
+
+
+node_t *get_node (tree_t *tree ,node_t *cursor,  tree_key_t key)
+{
+  return get_node_aux(tree, cursor, key);
+
+}
+ 
+  
+       
 int _depth_children(node_t* node) {
   int leftdepth = 0;
   int rightdepth = 0;
@@ -84,6 +113,20 @@ bool trav_fun (tree_t *tree, traverse_func fun, void *data)
     }
   return result;
   
+}
+
+node_t *elem_get (tree_t *tree, node_t *node, elem_t elem)
+{
+  if (tree->comp(node->elem, elem) > 0)
+    {
+      return elem_get(tree, node->left, elem);
+    
+  }
+  if (tree->comp(node->elem, elem) < 0)
+    {
+      return elem_get(tree, node->right, elem); 
+  }
+   else return node;
 }
 
 void deleter (tree_t *tree, node_t *node, bool delete_keys, bool delete_elements)
@@ -328,5 +371,193 @@ void tree_delete(tree_t *tree, bool delete_keys, bool delete_elements)
   _tree_delete_aux(tree,tree->root, delete_keys, delete_elements);
   free(tree);
 }
+
+
+/// TREE REMOVE TODO!!!!
+
+void remove_aux (tree_t *tree, node_t *node, elem_t *result, tree_key_t key)
+{
+
+
+
+  
+}
+
+bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result);
+
+
+
+
+
+
+int print_tree (tree_t *tree, tree_key_t key)
+{
+  node_t *node = tree->root;
+
+  if (node->key.i != 0)
+    {
+      return
+        printf("%s\n", "empty");
+        
+      
+  }
+  while (node->key.i != 0)
+    {
+     printf("%d\n", key.i );
+     print_tree(tree, node->left->key);
+     print_tree(tree, node->right->key);
+  }
+  return 0;
+}
+
+
+//BALANSERING AV TRÄD TODO!!!!
+
+int balance_factor (tree_t *tree, node_t *node)
+{
+  node = tree->root;
+  
+  int bf =((tree_depth(node->left->tree) - tree_depth(node->right->tree)));
+  return bf;
+}
+
+node_t *bal_rot_l_l (tree_t *tree, node_t *node)
+{
+  tree->root = node;
+  node_t *node_a = node;
+  node_t *node_a_l = node->left;
+  //node_t *node_a_r = tree->root->right;
+  //node_t *node_a_r_l = tree->root->right->left;
+  //node_t *node_a_r_r = tree->root->right->right;
+  // node_t *node_a_l_l = tree->root->left->left;
+  node_t *node_a_l_r = node->left->right;
+     
+
+  node_a_l = node_a_l_r->right;
+  node_a_l_r = node_a_l_r->left;
+  node_a_l_r->left = node_a_l;
+  node_a_l_r->right = node_a;
+  node = node_a_l;
+  return node;
+          
+}
+
+node_t *bal_rot_l_r (tree_t *tree, node_t *node)
+{
+  tree->root = node;
+  node_t *node_a = node; //a
+  node_t *node_a_l = node->left;//b
+  //node_t *node_a_r = tree->root->right;
+  //node_t *node_a_r_l = tree->root->right->left;
+  //node_t *node_a_r_r = tree->root->right->right;
+  //node_t *node_a_l_l = tree->root->left->left;
+  node_t *node_a_l_r = node->left->right; // c
+     
+
+  node_a_l = node_a_l_r->right;
+  node_a_l_r = node_a_l_r->left;
+  node_a_l_r->left = node_a_l;
+  node_a_l_r->right = node_a;
+  node = node_a_l_r;
+  return node;
+          
+          
+}
+
+node_t *bal_rot_r_l (tree_t *tree, node_t *node)
+{
+  tree->root = node;
+  node_t *node_a = node; //a
+  //node_t *node_a_l = tree->root->left;
+  node_t *node_a_r = node->right;//b
+  node_t *node_a_r_l = node->right->left; //c
+  //node_t *node_a_r_r = tree->root->right->right;
+  //node_t *node_a_l_l = tree->root->left->left; 
+  //node_t *node_a_l_r = tree->root->left->right; 
+     
+
+  node_a_r = node_a_r_l->left;
+  node_a_r_l = node_a_r_l->left;
+  node_a_r_l->right = node_a_r;
+  node_a_r_l->left = node_a;
+
+  node = node_a_r_l;
+  return node;
+}
+
+node_t *bal_rot_r_r (tree_t *tree, node_t *node)
+{
+  tree->root = node;
+  node_t *node_a = node; //a
+  // node_t *node_a_l = tree->root->left;
+  node_t *node_a_r = node->right;//b
+  node_t *node_a_r_l = node->right->left; //c
+  //node_t *node_a_r_r = tree->root->right->right;
+  //node_t *node_a_l_l = tree->root->left->left; 
+  // node_t *node_a_l_r = tree->root->left->right; 
+     
+
+  node_a_r = node_a_r_l;
+  node_a_r_l = node_a;
+
+  node = node_a_r;
+  return node;
+}
+
+node_t balance_tree(tree_t *tree, node_t *node)
+{
+  node_t *newroot = tree->root;
+  node_t *cursor = tree->root;
+  int bf = balance_factor(tree, cursor);
+  if (cursor->left) //left not empty
+    {
+      cursor = node->left;
+      return (balance_tree(tree, cursor->left)); 
+    }
+  
+  if (cursor->right) // right not empty
+    {
+      cursor = cursor->right;
+      
+      return (balance_tree(tree, cursor->right));
+  }
+  if (bf >= 2 ) // vänstertung
+          {
+            if (balance_factor(tree, cursor->left) <= -1)
+              {
+                newroot = bal_rot_l_r(tree, cursor);  //fungerar det att deklarera så? med ny root som cursor
+            }
+            else
+              {
+                newroot = bal_rot_l_l(tree, cursor);
+              }
+
+          }
+  else if (bf <= -2 )//högertung
+    {
+      if (balance_factor(tree, cursor->right) >= 1)
+        {
+          newroot = bal_rot_r_l(tree, cursor);
+      }
+      else
+        {
+          newroot = bal_rot_r_r(tree, cursor);
+        }
+      
+    }
+  else
+    {
+      newroot = cursor;
+     }
+  return *newroot;
+}
+
+
+
+
+
+
+
+
 
 
