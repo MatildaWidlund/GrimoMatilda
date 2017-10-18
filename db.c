@@ -28,6 +28,38 @@ struct action {
     struct{item_t *old; item_t *new;};
   };
 };
+/* TREE COPY COMPARE FREE*/
+
+// Måste göra funktionerna
+
+elem_t tree_copy(elem_t tree)
+{
+  elem_t *from= tree.p;
+  elem_t *to = calloc(1, sizeof(elem_t));
+  *to = *from;
+
+  elem_t result;
+  result.p =to;
+  return result;
+   
+}
+
+void free_k(elem_t key)
+{
+  free(key.p);
+}
+
+void free_e(elem_t elem)
+{
+  free(elem.p);
+}
+
+int tree_compare(elem_t a, elem_t b)
+{
+  return(strcmp(a.p, b.p));
+}
+
+/* */
 /* SHELF: COPY / FREE / COMPARE */
 elem_t shelf_copy(elem_t shelf)
 {
@@ -73,6 +105,8 @@ int shelf_compare(elem_t a, elem_t b) //size_t??? int???
 /* END OF SHELF: COPY / FREE / COMPARE */
 
 
+
+
 shelf_t * create_shelf(char *name, int amount)
 {
   shelf_t *shelf = calloc(1, sizeof(shelf_t));
@@ -82,6 +116,7 @@ shelf_t * create_shelf(char *name, int amount)
       shelf->name = name;
       shelf->amount = amount;
     }
+  return shelf;
 }
   
 
@@ -395,12 +430,14 @@ void print_item(item_t *item)
     }
 }
 
-int list_page(tree_key_t keys, int length, int index);
+int list_page(tree_key_t keys, int length, int index)
 {
   int i = 0;
+  char *key;
+  key = keys.p;
   for (; i < 20 && index < length;)
     {
-      printf("%d %s\n", i +1, keys[index]);
+      printf("%d %s\n", i +1, &key[index]);
       ++i;
       ++index;
     }
@@ -700,7 +737,7 @@ void event_loop(tree_t* tree)
 
 int main(int argc, char* argv[])
 {
-  tree_t *tree = tree_new(element_copy_fun copy, key_free_fun key_free, element_free_fun elem_free, element_comp_fun compare);
+  tree_t *tree = tree_new(tree_copy, free_k, free_e, tree_compare);
   event_loop(tree);
   tree_delete(tree, true, true); // eller ska det vara false?
   return 0;
