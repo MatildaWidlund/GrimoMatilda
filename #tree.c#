@@ -72,25 +72,21 @@ node_t *get_node (tree_t *tree ,node_t *cursor,  tree_key_t key)
 }
  
   
-
-
-
+       
 int _depth_children(node_t* node) {
   int leftdepth = 0;
   int rightdepth = 0;
 
   if (node -> left != NULL) {
-    leftdepth = (_depth_children(node-> left) + 1);
+    leftdepth = _depth_children(node-> left) + 1;
   }
 
   if (node -> right != 0) {
-    rightdepth = (_depth_children(node -> right) + 1);
+    rightdepth = _depth_children(node -> right) + 1;
   }
 
   return (leftdepth > rightdepth) ? leftdepth : rightdepth;
 }
-
-
 
 void tree_fun_aux(bool *result, node_t *node, traverse_func fun, void *data)
 {
@@ -211,13 +207,13 @@ bool tree_insert_aux(tree_t *tree, node_t **node, tree_key_t key, elem_t elem)
         {
           printf("%s\n","tree mindre än input");
           
-          return tree_insert_aux(tree,&(*node)->right, key, elem); 
+          return tree_insert_aux(tree,&(*node)->left, key, elem); 
         }
       else if ((*node)->elem.i < elem.i)
         {
           printf("%s\n","tree större än input");
           
-          return tree_insert_aux(tree,&(*node)->left, key, elem); 
+          return tree_insert_aux(tree,&(*node)->right, key, elem); 
         }
       
     }
@@ -239,11 +235,11 @@ bool tree_insert_aux(tree_t *tree, node_t **node, tree_key_t key, elem_t elem)
     if (tree->comp((*node)->elem, elem) == -1)
       {
         
-        tree_insert_aux(tree, &(*node)->right, key, elem);
+        tree_insert_aux(tree, &(*node)->left, key, elem);
       }
     else if(tree->comp((*node)->elem, elem) == 1)
       {
-        tree_insert_aux(tree, &(*node)->left, key, elem);    
+        tree_insert_aux(tree, &(*node)->right, key, elem);    
       }
     else if(tree->comp((*node)->elem, elem) == 0)
       {
@@ -377,31 +373,57 @@ void tree_delete(tree_t *tree, bool delete_keys, bool delete_elements)
 }
 
 
-/// TREE REMOVE TODO!!!!
+///TREE REMOVE
 
-void remove_aux (tree_t *tree, node_t *node, elem_t *result, tree_key_t key)
+node_t balance_remove_aux(node_t *node)
 {
-
-  return;
-
-  
+  node_t *cursor = node;
+  do {cursor = cursor->left;}
+  while (cursor->left != NULL);
+  return *cursor;   
 }
+
 
 bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 {
-
-  return false;
-=======
-    if(tree_get(tree, key, result))
-        return true;
-    else
+  node_t *cursor = NULL;
+  node_t *node = get_node(tree, cursor, key);
+  node_t *remove_node= node;
+  if (node == NULL) return false;
+  if (node->left== NULL && node->right== NULL)
     {
-        return false;
+      *result = node->elem;
+      free(remove_node);
+      node = NULL;
+      return true;
     }
-
+  else if (node->left != NULL)
+    {
+      *result = node->elem;
+      node = node->left;
+      free(remove_node);
+      return true;
+    }
+  else if (node->right != NULL)
+    {
+      *result = node->elem;
+      node = node->right;
+      free(remove_node);
+      return true;
+    }
+  else if (node->left != NULL && node->right != NULL)
+    {
+      node_t tmp = balance_remove_aux(node->right);
+      *result = node->elem;
+      tmp.left = node->left;
+      *node = tmp;
+      free(remove_node);  
+    }
+  return false;
 }
 
 
+/// TREE REMOVE TODO!!!!
 
 
 int print_tree (tree_t *tree, tree_key_t key)
@@ -427,7 +449,144 @@ int print_tree (tree_t *tree, tree_key_t key)
 
 //BALANSERING AV TRÄD TODO!!!!
 
- 
+int balance_factor (tree_t *tree, node_t *node)
+{
+  node = tree->root;
+  
+  int bf =((tree_depth(node->left->tree) - tree_depth(node->right->tree)));
+  return bf;
+}
+
+node_t *bal_rot_l_l (tree_t *tree, node_t *node)
+{
+  tree->root = node;
+  node_t *node_a = node;
+  node_t *node_a_l = node->left;
+  //node_t *node_a_r = tree->root->right;
+  //node_t *node_a_r_l = tree->root->right->left;
+  //node_t *node_a_r_r = tree->root->right->right;
+  // node_t *node_a_l_l = tree->root->left->left;
+  node_t *node_a_l_r = node->left->right;
+     
+
+  node_a_l = node_a_l_r->right;
+  node_a_l_r = node_a_l_r->left;
+  node_a_l_r->left = node_a_l;
+  node_a_l_r->right = node_a;
+  node = node_a_l;
+  return node;
+          
+}
+
+node_t *bal_rot_l_r (tree_t *tree, node_t *node)
+{
+  tree->root = node;
+  node_t *node_a = node; //a
+  node_t *node_a_l = node->left;//b
+  //node_t *node_a_r = tree->root->right;
+  //node_t *node_a_r_l = tree->root->right->left;
+  //node_t *node_a_r_r = tree->root->right->right;
+  //node_t *node_a_l_l = tree->root->left->left;
+  node_t *node_a_l_r = node->left->right; // c
+     
+
+  node_a_l = node_a_l_r->right;
+  node_a_l_r = node_a_l_r->left;
+  node_a_l_r->left = node_a_l;
+  node_a_l_r->right = node_a;
+  node = node_a_l_r;
+  return node;
+          
+          
+}
+
+node_t *bal_rot_r_l (tree_t *tree, node_t *node)
+{
+  tree->root = node;
+  node_t *node_a = node; //a
+  //node_t *node_a_l = tree->root->left;
+  node_t *node_a_r = node->right;//b
+  node_t *node_a_r_l = node->right->left; //c
+  //node_t *node_a_r_r = tree->root->right->right;
+  //node_t *node_a_l_l = tree->root->left->left; 
+  //node_t *node_a_l_r = tree->root->left->right; 
+     
+
+  node_a_r = node_a_r_l->left;
+  node_a_r_l = node_a_r_l->left;
+  node_a_r_l->right = node_a_r;
+  node_a_r_l->left = node_a;
+
+  node = node_a_r_l;
+  return node;
+}
+
+node_t *bal_rot_r_r (tree_t *tree, node_t *node)
+{
+  tree->root = node;
+  node_t *node_a = node; //a
+  // node_t *node_a_l = tree->root->left;
+  node_t *node_a_r = node->right;//b
+  node_t *node_a_r_l = node->right->left; //c
+  //node_t *node_a_r_r = tree->root->right->right;
+  //node_t *node_a_l_l = tree->root->left->left; 
+  // node_t *node_a_l_r = tree->root->left->right; 
+     
+
+  node_a_r = node_a_r_l;
+  node_a_r_l = node_a;
+
+  node = node_a_r;
+  return node;
+}
+
+node_t balance_tree(tree_t *tree, node_t *node)
+{
+  node_t *newroot = tree->root;
+  node_t *cursor = tree->root;
+  int bf = balance_factor(tree, cursor);
+  if (cursor->left) //left not empty
+    {
+      cursor = node->left;
+      return (balance_tree(tree, cursor->left)); 
+    }
+  
+  if (cursor->right) // right not empty
+    {
+      cursor = cursor->right;
+      
+      return (balance_tree(tree, cursor->right));
+  }
+  if (bf >= 2 ) // vänstertung
+          {
+            if (balance_factor(tree, cursor->left) <= -1)
+              {
+                newroot = bal_rot_l_r(tree, cursor);  //fungerar det att deklarera så? med ny root som cursor
+            }
+            else
+              {
+                newroot = bal_rot_l_l(tree, cursor);
+              }
+
+          }
+  else if (bf <= -2 )//högertung
+    {
+      if (balance_factor(tree, cursor->right) >= 1)
+        {
+          newroot = bal_rot_r_l(tree, cursor);
+      }
+      else
+        {
+          newroot = bal_rot_r_r(tree, cursor);
+        }
+      
+    }
+  else
+    {
+      newroot = cursor;
+     }
+  return *newroot;
+}
 
 
 
