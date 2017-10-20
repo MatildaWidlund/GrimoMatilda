@@ -374,25 +374,56 @@ void tree_delete(tree_t *tree, bool delete_keys, bool delete_elements)
 
 
 /// TREE REMOVE TODO!!!!
-
-void remove_aux (tree_t *tree, node_t *node, elem_t *result, tree_key_t key)
+node_t *remove_node_aux(node_t *node)
 {
-
-
-
-  
+  node_t *cursor = node;
+  do
+    {
+      cursor = cursor->left;
+    }
+  while(cursor->left != NULL);
+  return cursor;
 }
 
+ 
 bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 {
-    if(tree_get(tree, key, result))
-        return true;
-    else
+  node_t *cursor = NULL;
+  node_t *node = get_node(tree,cursor, key);
+  node_t *removenode = node;
+  if(node == NULL) return false;
+  if(node->left == NULL && node->right == NULL)
     {
-        return false;
+      *result = node->elem;
+      free(removenode);
+      node = NULL;
+      return true;
     }
+  else if(node->right == NULL)
+    {
+      *result = node->elem;
+      node = node->left;
+      free(removenode);
+      return true;
+    }
+  else if(node->left == NULL)
+    {
+      *result = node->elem;
+      node = node->right;
+      free(removenode);
+      return true;
+    }
+  else
+    {
+      node_t *tmp = remove_node_aux(node->right);
+      *result = node->elem;
+      tmp->left =node->left;
+      node = tmp;
+      free(removenode);
+    }
+  return false;
 }
-
+ 
 
 
 
