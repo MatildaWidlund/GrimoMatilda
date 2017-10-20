@@ -83,26 +83,34 @@ int main (void)
   //printf("%d\n",tree_size(tree));
   // printf("%s %d\n","djuppet på träd", tree_depth(tree));
   tree_insert(tree, key10, elem5);
+  print_tree(tree);
   printf("%s\n","storlek på träd efter insert:" );
   printf("%s, %d\n","tree size:" ,tree_size(tree)); 
   print_tree(tree);
   printf("%s\n","balannce" );
   tree_balance(tree);
   print_tree(tree);
+
   printf("%s\n","tree size" );
-   printf("%d\n",tree_size(tree));
-  printf("%s\n","tree depth" );
+  printf("%d\n",tree_size(tree));
+   printf("%s\n","tree depth" );
   printf("%d\n",tree_depth(tree) );
   printf("%s\n","alla keys:" );
-  tree_keys(tree);
+  //tree_keys(tree);
   printf("%s\n","alla elem:" );
-  tree_elements(tree);
+  // tree_elements(tree);
+  elem_t test;
+  tree_remove(tree,key7, &test);
+
+  //tree_balance(tree);
+
+  //print_tree(tree);
  
   //tree_has_key(tree, key7);
-  printf("%s\n","tree delete" ); 
-  tree_delete(tree, true, true);
-  printf("%s\n","tree size efter delete" );
-  tree_size(tree);
+  // printf("%s\n","tree delete" ); 
+  //tree_delete(tree, true, true);
+  //printf("%s\n","tree size efter delete" );
+  //tree_size(tree);
   
   
   return 0;
