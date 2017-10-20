@@ -70,33 +70,35 @@ int main (void)
   tree_key_t key9 = {.i=9};
   tree_key_t key10 = {.i=10};
   
-  printf("%d\n",tree_size(tree));
+  //printf("%d\n",tree_size(tree));
   tree_insert(tree, key1, elem1);
   
-  printf("%d\n",tree_size(tree));      
-  printf("%s %d\n","djuppet på träd", tree_depth(tree)); 
+  //printf("%d\n",tree_size(tree));      
+  //printf("%s %d\n","djuppet på träd", tree_depth(tree)); 
   tree_insert(tree, key7, elem2);
-  printf("%d\n",tree_size(tree));
-  printf("%s %d\n","djuppet på träd", tree_depth(tree)); 
+  //printf("%d\n",tree_size(tree));
+  //printf("%s %d\n","djuppet på träd", tree_depth(tree)); 
   tree_insert(tree, key8, elem3);
-  printf("%d\n",tree_size(tree));
-  printf("%s %d\n","djuppet på träd", tree_depth(tree)); 
+  //printf("%d\n",tree_size(tree));
+  //printf("%s %d\n","djuppet på träd", tree_depth(tree)); 
   tree_insert(tree, key9, elem4);
-  printf("%d\n",tree_size(tree));
-  printf("%s %d\n","djuppet på träd", tree_depth(tree));
+  //printf("%d\n",tree_size(tree));
+  // printf("%s %d\n","djuppet på träd", tree_depth(tree));
   tree_insert(tree, key10, elem5);
-  printf("%d\n",tree_size(tree));
-  printf("%s %d\n","djuppet på träd", tree_depth(tree));
- printf("%s %d\n", "size före delete" , tree_size(tree));
- tree_has_key(tree, key10);
- tree_get(tree, key10, result);
- printf("%s\n","enter tree_remove" );
+  //printf("%d\n",tree_size(tree));
+  //printf("%s %d\n","djuppet på träd", tree_depth(tree));
+  //printf("%s %d\n", "size före delete" , tree_size(tree));
+ //tree_has_key(tree, key10);
+ //tree_get(tree, key10, result);
+ // printf("%s\n","enter tree_remove" );
  
- tree_remove(tree, key10, result);
- printf("%s\n","borttagen key 10" );
- tree_has_key(tree, key10);
+ //tree_remove(tree, key10, result);
+ //printf("%s\n","borttagen key 10" );
+ //tree_has_key(tree, key10);
 
- tree_get(tree, key10, result);
+ //tree_get(tree, key10, result);
+
+ balance_tree(tree);
  
  //tree_delete(tree, true, true);
  // printf("%s %d\n", "size efter delete" , tree_size(tree));

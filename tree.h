@@ -9,6 +9,8 @@ typedef element_free_fun key_free_fun;
 
 /// Define struct tree in your .c file not here! (why?)
 typedef struct tree tree_t;
+//TODO: remove tree_balance sen
+void balance_tree(tree_t *tree);
 
 /// Creates a new tree
 ///
