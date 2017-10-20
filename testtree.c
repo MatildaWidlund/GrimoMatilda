@@ -87,10 +87,8 @@ int main (void)
   printf("%s\n","storlek på träd efter insert:" );
   printf("%s, %d\n","tree size:" ,tree_size(tree)); 
   print_tree(tree);
-  printf("%s\n","balannce" );
-  tree_balance(tree);
+  printf("%s\n","print tree" );
   print_tree(tree);
-
   printf("%s\n","tree size" );
   printf("%d\n",tree_size(tree));
    printf("%s\n","tree depth" );
@@ -98,16 +96,36 @@ int main (void)
   printf("%s\n","alla keys:" );
   //tree_keys(tree);
   printf("%s\n","alla elem:" );
+
+printf("%s\n","________________________:" ); 
   // tree_elements(tree);
-  elem_t test;
-  tree_remove(tree,key7, &test);
-
-  //tree_balance(tree);
-
-  //print_tree(tree);
+ printf("%s\n", "tree consists of:" );
+ print_tree(tree);
  
-  //tree_has_key(tree, key7);
-  // printf("%s\n","tree delete" ); 
+
+ printf("%s\n","kör en balance:" );
+ tree= tree_balance(tree);
+ printf("%s\n", "tree consists of:" );
+ print_tree(tree);
+ elem_t test;
+
+printf("%s\n","kör en balance:" );
+ tree= tree_balance(tree);
+ printf("%s\n", "tree consists of:" );
+ print_tree(tree);
+ 
+  printf("%s\n","tree remove 7:" );
+  
+  tree_remove(tree,key7, &test);
+  tree = tree_balance(tree);
+  print_tree(tree);
+ tree_remove(tree,key7, &test);
+  tree = tree_balance(tree);
+  print_tree(tree);
+
+  
+  // tree_has_key(tree, key10);
+  //printf("%s\n","tree delete" ); 
   //tree_delete(tree, true, true);
   //printf("%s\n","tree size efter delete" );
   //tree_size(tree);

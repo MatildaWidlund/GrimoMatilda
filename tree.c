@@ -43,37 +43,53 @@ typedef bool(*traverse_func)(node_t *node, void *p);
 //TODO: ADDERA IN INTERNAL FUNCTIONS NÄR DET BEHÖVS...
 // - - - - - -
 
-node_t *get_node_aux(tree_t *tree, node_t *cursor, tree_key_t key)
+node_t *get_node_aux(tree_t *tree, node_t **cursor, tree_key_t key)
 {
-  cursor = tree->root;
+  
   printf("%s\n","kör get node aux" );
-  if (tree->comp(cursor->key, key)  == 0)
+  
+  if (tree->comp((*cursor)->key, key)  == 0)
     {
       printf("%s\n","returnera cursor" );
-      return cursor;
+      return *cursor;
     }
 
-  while (tree->comp(cursor->key, key)  != 0)
+  while (tree->comp((*cursor)->key, key)  != 0)
     {
        printf("%s\n","om inte == 0" );
-      if (tree->comp(cursor->key, key) > 0)
+       if (tree->comp((*cursor)->key, key) > 0)
         {
            printf("%s\n","traverserar right" );
-          get_node_aux(tree, cursor->right, key);
+           get_node_aux(tree, &(*cursor)->right, key);
         }
-      else if (tree->comp(cursor->key, key) < 0) {
+       else if (tree->comp((*cursor)->key, key) < 0) {
         printf("%s\n","traverserar" );
-        get_node_aux(tree, cursor->left, key);
+        get_node_aux(tree, &(*cursor)->left, key);
       }
     }
-  return cursor;
+  return *cursor;
 }
 
 
-node_t *get_node (tree_t *tree ,node_t *cursor,  tree_key_t key)
+node_t **get_node(tree_t *tree ,node_t **cursor,  tree_key_t key)
 {
-  return get_node_aux(tree, cursor, key);
+  if (*cursor == NULL) return NULL;
+  
+  int cmp = tree->comp(key, (*cursor)->key);
+  
+  if (cmp == 0)
+    {
+      return cursor;
+    }
 
+  if (cmp < 0)
+    {
+      return get_node(tree, &(*cursor)->left, key);
+    }
+  else
+    {
+      return get_node(tree, &(*cursor)->right, key);
+    }  
 }
 
 int _depth_children(node_t* node) {
@@ -180,15 +196,15 @@ bool tree_insert_aux(tree_t *tree, node_t **node, tree_key_t key, elem_t elem)
         }
       else if ((*node)->elem.i > elem.i)
         {
-          printf("%s\n","traversing right");
-          
-          return tree_insert_aux(tree,&(*node)->right, key, elem); 
-        }
-      else if ((*node)->elem.i < elem.i)
-        {
           printf("%s\n","traversing left");
           
           return tree_insert_aux(tree,&(*node)->left, key, elem); 
+        }
+      else if ((*node)->elem.i < elem.i)
+        {
+          printf("%s\n","traversing right");
+          
+          return tree_insert_aux(tree,&(*node)->right, key, elem); 
         }
       
     }
@@ -228,6 +244,11 @@ bool tree_insert_aux(tree_t *tree, node_t **node, tree_key_t key, elem_t elem)
 
 //EXTERNAL FUNCTIONS
 
+int int_cmp(elem_t a, elem_t b)
+{
+  return a.i - b.i; 
+}
+
 
 tree_t* tree_new(element_copy_fun element_copy, key_free_fun key_free, element_free_fun elem_free, element_comp_fun compare)
 {
@@ -245,6 +266,8 @@ tree_t* tree_new(element_copy_fun element_copy, key_free_fun key_free, element_f
   }
   if (compare) {
     tree->comp = compare;
+  } else {
+    tree->comp = int_cmp;
   }
 
   return tree;
@@ -309,7 +332,7 @@ bool tree_insert(tree_t *tree, tree_key_t key, elem_t elem)
 }
 
 
-int tree_has_key_aux (tree_t *tree, node_t *node1,tree_key_t key)
+int tree_has_key_aux (tree_t *tree, node_t *node1, tree_key_t key)
 {
   if (node1 == NULL)
     {
@@ -318,13 +341,13 @@ int tree_has_key_aux (tree_t *tree, node_t *node1,tree_key_t key)
  
   if (tree->comp(node1->key, key) > 0)
     {
-      printf("%s\n","key  bigger" );
-      tree_has_key_aux(tree, node1->right, key);
+      printf("%s\n","key  smaller than tree-key" );
+      tree_has_key_aux(tree, node1->left, key);
     }
   else if (tree->comp(node1->key, key) < 0)
     {
-      printf("%s\n","node smaller" );
-      tree_has_key_aux(tree, node1->left, key);
+      printf("%s\n","key bigger than tree->key" );
+      tree_has_key_aux(tree, node1->right, key);
     }
   else
     {
@@ -405,37 +428,40 @@ node_t *balance_remove_node(node_t *node)
 
 bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 {
-    node_t *cursor = tree->root;
-    node_t *node = get_node(tree, cursor, key);
-    node_t *remove_node = node;
-    if(node == NULL) return false;
-    if (node->right == NULL && node->left == NULL)
+    node_t **cursor = &tree->root;
+    node_t **node = get_node(tree, cursor, key);
+
+    if (node == NULL || *node == NULL) return false; 
+    
+    node_t *remove_node = *node;
+
+    if (remove_node->right == NULL && remove_node->left == NULL)
     {
-        *result = node->elem;
-        free(remove_node);
-        node = NULL;
-        return true;
+      *result = remove_node->elem;
+      free(remove_node);
+      *node = NULL;
+      return true;
     }
-    else if(node->right == NULL)
+    else if(remove_node->right == NULL)
       {
-        *result = node->elem;
-        node = node->left;
+        *result = remove_node->elem;
+        *node = remove_node->left;
         free(remove_node);
         return true;
       }
-    else if(node->left == NULL)
+    else if(remove_node->left == NULL)
       {
-        *result = node->elem;
-        node = node->right;
+        *result = remove_node->elem;
+        *node = remove_node->right;
         free(remove_node);
         return true;
       }
     else
       {
-        node_t *tmp = balance_remove_node(node->right);
-        *result = node->elem;
-        tmp->left = node->left;
-        node = tmp;
+        node_t *tmp = balance_remove_node(remove_node->right);
+        *result = remove_node->elem;
+        tmp->left = remove_node->left;
+        *node = tmp;
         free(remove_node);
       }
     return false;
@@ -473,7 +499,7 @@ void tree_balance_helper(tree_t *tree, tree_key_t *list_of_keys, elem_t *list_of
                          ,int start,int stop)
 {
   int middle = ((stop + start)/2);
-
+  printf("midde = %d, start = %d, stop = %d\n", middle, start, stop);
   tree_key_t key = list_of_keys[middle];
   elem_t elem = list_of_elements[middle];
   tree_insert(tree,key,elem);
@@ -485,7 +511,7 @@ void tree_balance_helper(tree_t *tree, tree_key_t *list_of_keys, elem_t *list_of
     }
 }
 
-void tree_balance(tree_t *tree)
+tree_t *tree_balance(tree_t *tree)
 {
   int size = tree_size(tree);
   tree_key_t *list_of_keys = tree_keys(tree);
@@ -493,13 +519,12 @@ void tree_balance(tree_t *tree)
 
   tree_t * NewTree = tree_new(NULL,NULL,NULL,NULL);
 
-  tree_balance_helper(NewTree,list_of_keys,list_of_elements,0,size-1);
+  tree_balance_helper(NewTree,list_of_keys,list_of_elements,0,size);
   tree_delete(tree,false,false);
 
   free(list_of_keys);
   free(list_of_elements);
-  *tree = *NewTree;
-  free(NewTree);
+  return NewTree;
 }
 
 void tree_keys_helper(node_t *node, tree_key_t* list_of_keys,int * index)
