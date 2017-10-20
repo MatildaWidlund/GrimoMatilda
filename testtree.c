@@ -18,12 +18,12 @@ elem_t string_copy(elem_t elem)
   
 }
 
-void free_key (elem_t key)
+void key_free (elem_t key)
 {
   return;
 }
 
-void free_elem(elem_t elem)
+void elem_free(elem_t elem)
 {
   return;
 }
@@ -46,19 +46,17 @@ int int_compare(elem_t a, elem_t b)
   if (a.i == b.i)
     {return 0;}
   else if  (a.i > b.i)
-    {return 1;}
+    {return -1;}
   else 
-    {return -1;} 
+    {return 1;} 
 }
   
 
 
 int main (void)
-{
- 
-  
-  tree_t * tree = tree_new(NULL,free_key, free_elem, int_compare);
-  elem_t *result = NULL;
+{  
+  tree_t * tree = tree_new(element_copy, key_free, elem_free, int_compare);
+  //elem_t result ={.i=1};
   elem_t elem1 = {.i=1};
   elem_t elem2 = {.i=2};
   elem_t elem3 = {.i=3};
@@ -72,8 +70,8 @@ int main (void)
   
   //printf("%d\n",tree_size(tree));
   tree_insert(tree, key1, elem1);
-  
-  //printf("%d\n",tree_size(tree));      
+  print_tree(tree);
+  printf("%s, %d\n","tree size:" ,tree_size(tree));      
   //printf("%s %d\n","djuppet på träd", tree_depth(tree)); 
   tree_insert(tree, key7, elem2);
   //printf("%d\n",tree_size(tree));
@@ -85,23 +83,27 @@ int main (void)
   //printf("%d\n",tree_size(tree));
   // printf("%s %d\n","djuppet på träd", tree_depth(tree));
   tree_insert(tree, key10, elem5);
-  //printf("%d\n",tree_size(tree));
-  //printf("%s %d\n","djuppet på träd", tree_depth(tree));
-  //printf("%s %d\n", "size före delete" , tree_size(tree));
- //tree_has_key(tree, key10);
- //tree_get(tree, key10, result);
- // printf("%s\n","enter tree_remove" );
+  printf("%s\n","storlek på träd efter insert:" );
+  printf("%s, %d\n","tree size:" ,tree_size(tree)); 
+  print_tree(tree);
+  printf("%s\n","balannce" );
+  tree_balance(tree);
+  print_tree(tree);
+  printf("%s\n","tree size" );
+   printf("%d\n",tree_size(tree));
+  printf("%s\n","tree depth" );
+  printf("%d\n",tree_depth(tree) );
+  printf("%s\n","alla keys:" );
+  tree_keys(tree);
+  printf("%s\n","alla elem:" );
+  tree_elements(tree);
  
- //tree_remove(tree, key10, result);
- //printf("%s\n","borttagen key 10" );
- //tree_has_key(tree, key10);
-
- //tree_get(tree, key10, result);
-
- balance_tree(tree);
- 
- //tree_delete(tree, true, true);
- // printf("%s %d\n", "size efter delete" , tree_size(tree));
+  //tree_has_key(tree, key7);
+  printf("%s\n","tree delete" ); 
+  tree_delete(tree, true, true);
+  printf("%s\n","tree size efter delete" );
+  tree_size(tree);
+  
   
   return 0;
 }
