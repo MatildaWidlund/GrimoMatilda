@@ -43,34 +43,34 @@ typedef bool(*traverse_func)(node_t *node, void *p);
 //TODO: ADDERA IN INTERNAL FUNCTIONS NÄR DET BEHÖVS...
 // - - - - - -
 
-node_t *get_node_aux(tree_t *tree, node_t *cursor, tree_key_t key)
+node_t *get_node_aux(tree_t *tree, node_t **cursor, tree_key_t key)
 {
-  cursor = tree->root;
+  cursor = &tree->root;
   printf("%s\n","kör get node aux" );
-  if (tree->comp(cursor->key, key)  == 0)
+  if (tree->comp((*cursor)->key, key)  == 0)
     {
       printf("%s\n","returnera cursor" );
-      return cursor;
+      return *cursor;
     }
 
-  while (tree->comp(cursor->key, key)  != 0)
+  while (tree->comp((*cursor)->key, key)  != 0)
     {
        printf("%s\n","om inte == 0" );
-      if (tree->comp(cursor->key, key) > 0)
+       if (tree->comp((*cursor)->key, key) > 0)
         {
            printf("%s\n","traverserar right" );
-          get_node_aux(tree, cursor->right, key);
+           get_node_aux(tree, &(*cursor)->right, key);
         }
-      else if (tree->comp(cursor->key, key) < 0) {
+       else if (tree->comp((*cursor)->key, key) < 0) {
         printf("%s\n","traverserar" );
-        get_node_aux(tree, cursor->left, key);
+        get_node_aux(tree, &(*cursor)->left, key);
       }
     }
-  return cursor;
+  return *cursor;
 }
 
 
-node_t *get_node (tree_t *tree ,node_t *cursor,  tree_key_t key)
+node_t *get_node (tree_t *tree ,node_t **cursor,  tree_key_t key) //varför passing arg?
 {
   return get_node_aux(tree, cursor, key);
 
@@ -395,38 +395,37 @@ bool tree_get(tree_t *tree, tree_key_t key, elem_t *result)
 node_t *balance_remove_node(node_t *node)
 {
   node_t *cursor = node;
-  do
+  while (cursor->left != NULL)
   {
     cursor = cursor->left;
   }
-  while (cursor->left != NULL);
   return cursor;
 }
 
 bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 {
-    node_t *cursor = tree->root;
+    node_t **cursor = &tree->root;
     node_t *node = get_node(tree, cursor, key);
     node_t *remove_node = node;
     if(node == NULL) return false;
-    if (node->right == NULL && node->left == NULL)
+    if ((node)->right == NULL && (node)->left == NULL)
     {
-        *result = node->elem;
+      *result = (node)->elem;
         free(remove_node);
         node = NULL;
         return true;
     }
-    else if(node->right == NULL)
+    else if((node)->right == NULL)
       {
-        *result = node->elem;
-        node = node->left;
+        *result = (node)->elem;
+        node = (node)->left;
         free(remove_node);
         return true;
       }
-    else if(node->left == NULL)
+    else if((node)->left == NULL)
       {
-        *result = node->elem;
-        node = node->right;
+        *result = (node)->elem;
+        node = (node)->right;
         free(remove_node);
         return true;
       }
