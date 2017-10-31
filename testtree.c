@@ -50,11 +50,17 @@ int int_compare(elem_t a, elem_t b)
   else 
     {return 1;} 
 }
-  
+
+bool print_key(tree_key_t key, elem_t elem, void *data)
+{
+  printf("%d\n", key.i);
+  return true;
+}
 
 
 int main (void)
-{  
+{
+  void *data = NULL;
   tree_t * tree = tree_new(element_copy, key_free, elem_free, int_compare);
   //elem_t result ={.i=1};
   elem_t elem1 = {.i=1};
@@ -129,7 +135,12 @@ printf("%s\n","kör en balance:" );
   //tree_delete(tree, true, true);
   //printf("%s\n","tree size efter delete" );
   //tree_size(tree);
-  
-  
+
+  printf("%s\n", "preord");
+  tree_apply(tree,-1, print_key, data);
+  printf("%s\n", "in");
+  tree_apply(tree,0, print_key, data);
+  printf("%s\n", "post");
+  tree_apply(tree,1, print_key, data);
   return 0;
 }

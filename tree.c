@@ -574,4 +574,87 @@ elem_t *tree_elements(tree_t *tree)
   return list_of_elements;
 }
 
+void apply_in_order (node_t *node, key_elem_apply_fun fun, void *data, bool *success)
+{
+  bool tmp = false;
+  if (node == NULL)
+    return ;
 
+  if (node != NULL)
+    {
+      apply_in_order(node->left, fun, data, success);
+      tmp = fun(node->key, node->elem, data);
+      if (tmp) {
+        *success = true;  
+      }
+      apply_in_order(node->right, fun, data, success);
+      return ;
+    }
+  else return;
+}
+
+void apply_post_order (node_t *node, key_elem_apply_fun fun, void *data, bool *success)
+{
+  bool tmp = false;
+  if (node == NULL)
+  {
+    return;
+  }
+  if (node != NULL)
+   {
+     apply_post_order(node->left, fun, data, success);
+     apply_post_order(node->right, fun, data, success);
+    
+     tmp = fun(node->key, node->elem, data);
+      if (tmp)
+       {
+         *success = true;
+       }
+     return;
+   }
+  else return;
+  
+}
+
+void apply_pre_order (node_t *node, key_elem_apply_fun fun, void *data, bool *success)
+{
+  bool tmp = false;
+  if (node == NULL)
+  {
+    return;
+  }
+  if (node != NULL)
+   {
+     tmp = fun(node->key, node->elem, data);
+     if (tmp) {
+       *success = true;
+     }
+     apply_post_order(node->left, fun, data, success);
+     apply_post_order(node->right, fun, data, success);
+     return;
+   }
+  else return;
+}
+
+
+bool tree_apply(tree_t *tree, enum tree_order order, key_elem_apply_fun fun, void *data)
+{
+  bool success = false;
+  if (order == 0)
+    {
+      apply_in_order(tree->root, fun, data, &success);
+      return success;
+      
+  }
+   if (order == 1)
+    {
+      apply_post_order(tree->root, fun, data, &success);
+      return success;
+  }
+    if (order == -1)
+    {
+      apply_pre_order(tree->root, fun, data, &success);
+      return success; 
+  }
+    else return false;
+}
