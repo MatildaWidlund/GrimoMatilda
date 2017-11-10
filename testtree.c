@@ -57,7 +57,7 @@ bool print_key(tree_key_t key, elem_t elem, void *data)
   return true;
 }
 
-
+/*
 int main (void)
 {
   void *data = NULL;
@@ -144,3 +144,4 @@ printf("%s\n","kör en balance:" );
   tree_apply(tree,1, print_key, data);
   return 0;
 }
+*/
