@@ -133,6 +133,9 @@ bool trav_fun (tree_t *tree, traverse_func fun, void *data)
 
 }
 
+
+
+  
 node_t *elem_get (tree_t *tree, node_t *node, elem_t elem)
 {
   if (tree->comp(node->elem, elem) > 0)
@@ -481,7 +484,7 @@ void print_tree_aux (tree_t *tree, node_t *node)
   while (node != NULL)
     {
       printf("%s", "key:");
-      printf("%d\n", node->key.i );
+      printf("%s\n", node->key.p );
       print_tree_aux(tree, node->left);
       print_tree_aux(tree, node->right);
       return;
@@ -659,3 +662,4 @@ bool tree_apply(tree_t *tree, enum tree_order order, key_elem_apply_fun fun, voi
   }
     else return false;
 }
+

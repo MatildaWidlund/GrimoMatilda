@@ -32,11 +32,11 @@ int str_compare(elem_t a, elem_t b)
 {
   if (strcmp((char*)a.p, (char*)b.p) >0)
     {
-      return 2 ;
+      return 1 ;
     }
   else if (strcmp((char*)a.p, (char*)b.p) < 0)
       {
-      return 1;
+      return -1;
     }
   else return 0; 
 }
@@ -57,22 +57,22 @@ bool print_key(tree_key_t key, elem_t elem, void *data)
   return true;
 }
 
-/*
+
 int main (void)
 {
   void *data = NULL;
-  tree_t * tree = tree_new(element_copy, key_free, elem_free, int_compare);
+  tree_t * tree = tree_new(element_copy, key_free, elem_free, str_compare);
   //elem_t result ={.i=1};
-  elem_t elem1 = {.i=1};
-  elem_t elem2 = {.i=2};
-  elem_t elem3 = {.i=3};
-  elem_t elem4 = {.i=4};
-  elem_t elem5 = {.i=5};
-  tree_key_t key1 = {.i=6};
-  tree_key_t key7 = {.i=7};
-  tree_key_t key8 = {.i=8};
-  tree_key_t key9 = {.i=9};
-  tree_key_t key10 = {.i=10};
+  elem_t elem1 = {.p= strdup("aaa")};
+  elem_t elem2 =  {.p= strdup("bbbc")};;
+  elem_t elem3 =  {.p= strdup("abc")};;
+  elem_t elem4 =  {.p= strdup("cccc")};;
+  elem_t elem5 =  {.p= strdup("ddd")};;
+  tree_key_t key1 =  {.p= strdup("aaaa")};
+  tree_key_t key7 =  {.p= strdup("bbbb")};
+  tree_key_t key8 =  {.p= strdup("assas")};
+  tree_key_t key9 =  {.p= strdup("gggg")};
+  tree_key_t key10 =  {.p= strdup("hej")};
   
   //printf("%d\n",tree_size(tree));
   tree_insert(tree, key1, elem1);
@@ -144,4 +144,4 @@ printf("%s\n","kör en balance:" );
   tree_apply(tree,1, print_key, data);
   return 0;
 }
-*/
+

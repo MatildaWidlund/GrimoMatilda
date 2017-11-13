@@ -56,7 +56,15 @@ void free_e(elem_t elem)
 
 int tree_compare(elem_t a, elem_t b)
 {
-  return(strcmp(a.p, b.p));
+  if (strcmp((char*)a.p, (char*)b.p) >0)
+    {
+      return 1 ;
+    }
+  else if (strcmp((char*)a.p, (char*)b.p) < 0)
+      {
+      return -1;
+    }
+  else return 0; 
 }
 
 /* */
@@ -83,7 +91,7 @@ int shelf_compare(elem_t a, elem_t b) //size_t??? int???
       return 2 ;
     }
   else if (strcmp((char*)a.p, (char*)b.p) < 0)
-      {
+    {
       return 1;
     }
   else return 0;
@@ -114,11 +122,11 @@ item_t *create_item(char *name, char *desc, int price, list_t *shelves)
 {
   item_t *item = (item_t*)calloc(1, sizeof(item_t));
 
-    item->name = name;
-    item->desc = desc;
-    item->price = price;
-    item->shelves = shelves;
-  	return item;
+  item->name = name;
+  item->desc = desc;
+  item->price = price;
+  item->shelves = shelves;
+  return item;
 }
 
 item_t *get_item_on_shelf(tree_t *tree, char* shelf_name) //elem_t?
@@ -131,9 +139,9 @@ item_t *get_item_on_shelf(tree_t *tree, char* shelf_name) //elem_t?
       tree_key_t node_name = t_keys[i];
       item_t *item = NULL;
       elem_t elem;
-      item = (item_t*)elem.p;
       tree_get(tree, node_name, &elem);
-
+      item = (item_t*)elem.p;
+      
       list_t *shelves = item->shelves;
       int length = list_length(shelves);
 
@@ -141,8 +149,9 @@ item_t *get_item_on_shelf(tree_t *tree, char* shelf_name) //elem_t?
         {
           shelf_t *shelf_item = NULL;
           elem_t element;
-          shelf_item = (shelf_t*)element.p;
           list_get(shelves, j, &element);
+          shelf_item = (shelf_t*)element.p;
+          
           char *other_shelf_name = shelf_item->name;
 
           if (strcmp(shelf_name, other_shelf_name)==0)
@@ -348,7 +357,7 @@ void add_item(tree_t *tree)
   else
     {
       add_new_item(tree, name);
-  }
+    }
 
   return;
 }
@@ -423,14 +432,14 @@ void print_item(item_t *item)
     }
 }
 
-int list_page(tree_key_t keys, int length, int index)
+int list_page(tree_key_t *keys, int length, int index)
 {
   int i = 0;
-  char *key;
-  key = (char*)keys.p;
+  //char *key;
+  //key = (char*)keys.p;
   for (; i < 20 && index < length;)
     {
-      printf("%d %s\n", i +1, &key[index]);
+      printf("%d %s\n", i +1, (char*)keys[index].p);
       ++i;
       ++index;
     }
@@ -454,7 +463,7 @@ item_t *select_item(tree_t *tree)
 
   while (!done)
     {
-      int page_size =list_page(*keys, size, index);
+      int page_size =list_page(keys, size, index);
       print_menu_next();
       char *str = ask_question_string("Skriv in en bokstav eller ett index: ");
       int number = atoi(str);
@@ -472,7 +481,7 @@ item_t *select_item(tree_t *tree)
               puts("Ogiltig inmatning!");
             }
           else
-        {
+            {
               item_t *item = NULL;
               elem_t elem;
               elem.p = item;
@@ -628,9 +637,9 @@ void edit_item(tree_t *tree, struct action *undo)
       elem_t element;
       shelf_t *shelf;
       shelf = element.p;
-     list_get(shelves, index, &element);
-     edit_shelf(tree, shelf); ///// Vad blir inputen istället list_get
-     break;
+      list_get(shelves, index, &element);
+      edit_shelf(tree, shelf); ///// Vad blir inputen istället list_get
+      break;
     default:
       puts("Ogiltig inmatning!");
       break;
@@ -681,13 +690,13 @@ char ask_question_menu(char *question)
 
 void print_main_menu()
 {
- puts("\n HUVUDMENY \n");
- puts("[L]ägg till en vara");
- puts("[T]a bort en vara");
- puts("[R]edigera en vara");
- puts("Ån[g]ra senaste ändringen");
- puts("Lista [h]ela varukatalogen");
- puts("[A]vsluta");
+  puts("\n HUVUDMENY \n");
+  puts("[L]ägg till en vara");
+  puts("[T]a bort en vara");
+  puts("[R]edigera en vara");
+  puts("Ån[g]ra senaste ändringen");
+  puts("Lista [h]ela varukatalogen");
+  puts("[A]vsluta");
 }
 
 void event_loop(tree_t* tree)
