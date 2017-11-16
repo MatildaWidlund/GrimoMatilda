@@ -592,7 +592,7 @@ void edit_item(tree_t *tree, struct action *undo)
   if(item == NULL) return;
 
   item_t *old = copy_item(item);
-   undo->old = old; //OSÄKER PÅ VAD DESSA GÖR
+   undo->old = old; 
    undo->new = item;
    undo->type= EDIT;
 
@@ -623,11 +623,11 @@ void edit_item(tree_t *tree, struct action *undo)
         {
           shelf_t *shelf = NULL;
           elem_t elem;
-          shelf = elem.p;
           list_get(shelves, i, &elem);
+          shelf = (shelf_t*)elem.p;
           printf("%d) %s: \t%d st\n", i + 1, shelf->name, shelf->amount);
         }
-      int index = ask_question_int("Skriv in ett index:") -1;
+      int index = (ask_question_int("Skriv in ett index:") -1);
 
       if (index < 0 || index >= length)
         {
@@ -636,8 +636,8 @@ void edit_item(tree_t *tree, struct action *undo)
         }
       elem_t element;
       shelf_t *shelf;
-      shelf = element.p;
       list_get(shelves, index, &element);
+      shelf = (shelf_t*)element.p;
       edit_shelf(tree, shelf); ///// Vad blir inputen istället list_get
       break;
     default:
