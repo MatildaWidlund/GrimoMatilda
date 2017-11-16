@@ -378,7 +378,7 @@ bool tree_has_key(tree_t *tree, tree_key_t key)
 
 
 
-bool tree_get(tree_t *tree, tree_key_t key, elem_t *result)
+bool tree_get(tree_t *tree, tree_key_t key1, elem_t *result)
 {
   //result = NULL;
 
@@ -390,7 +390,7 @@ bool tree_get(tree_t *tree, tree_key_t key, elem_t *result)
   node_t *node = tree->root;
   while (node != NULL)
     {
-      int res = tree->comp(node->key, key);
+      int res = tree->comp(node->key, key1);
       if (res > 0)
         {
           printf("%s\n","node bigger" );

@@ -55,8 +55,8 @@ void free_e(elem_t elem)
 }
 
 int tree_compare(elem_t a, elem_t b)
-{
-  if (strcmp((char*)a.p, (char*)b.p) >0)
+{    
+  if (strcmp((char*)a.p, (char*)b.p) > 0)
     {
       return 1 ;
     }
@@ -592,9 +592,9 @@ void edit_item(tree_t *tree, struct action *undo)
   if(item == NULL) return;
 
   item_t *old = copy_item(item);
-  undo->old = old;
-  undo->new = item;
-  undo->type = EDIT;
+   undo->old = old; //OSÄKER PÅ VAD DESSA GÖR
+   undo->new = item;
+   undo->type= EDIT;
 
   print_menu_edit();
 
