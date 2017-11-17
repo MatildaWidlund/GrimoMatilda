@@ -154,7 +154,8 @@ bool list_get(list_t *list, int index, elem_t *result)
   link_t **cursor = list_find(list, converted_index);
   
   if (*cursor)
-    { *result = (*cursor)->value; //? & (*cursor)->value : NULL;
+    {
+      *result = (*cursor)->value; //? & (*cursor)->value : NULL;
       return true;
     }
   return false;

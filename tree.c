@@ -17,12 +17,12 @@ extern char* strdup(const char*); //behålla denna?
 
 typedef struct node
 {
-  struct tree *tree; 
+  struct tree *tree;
   elem_t elem;
   tree_key_t key;
   struct node* left;
   struct node* right;
-  
+
 } node_t;
 
 typedef struct tree {
@@ -39,7 +39,7 @@ typedef bool(*traverse_func)(node_t *node, void *p);
 
 
 /* INTERNAL FUNCTIONS */
-// - - - - - - 
+// - - - - - -
 //TODO: ADDERA IN INTERNAL FUNCTIONS NÄR DET BEHÖVS...
 // - - - - - -
 /*
@@ -71,9 +71,9 @@ node_t *get_node_aux(tree_t *tree, node_t **cursor, tree_key_t key)
 node_t **get_node(tree_t *tree ,node_t **cursor,  tree_key_t key)
 {
   if (*cursor == NULL) return NULL;
-  
+
   int cmp = tree->comp((*cursor)->key, key);
-  
+
   if (cmp == 0)
     {
       return cursor;
@@ -86,7 +86,7 @@ node_t **get_node(tree_t *tree ,node_t **cursor,  tree_key_t key)
   else
     {
       return get_node(tree, &(*cursor)->right, key);
-    }  
+    }
 }
 
 int _depth_children(node_t* node) {
@@ -118,7 +118,7 @@ void tree_fun_aux(bool *result, node_t *node, traverse_func fun, void *data)
     {
       *result = true;
     };
-  
+
 }
 
 bool trav_fun (tree_t *tree, traverse_func fun, void *data)
@@ -130,19 +130,22 @@ bool trav_fun (tree_t *tree, traverse_func fun, void *data)
       return result;
     }
   return result;
-  
+
 }
 
+
+
+  
 node_t *elem_get (tree_t *tree, node_t *node, elem_t elem)
 {
   if (tree->comp(node->elem, elem) > 0)
     {
       return elem_get(tree, node->left, elem);
-    
+
     }
   if (tree->comp(node->elem, elem) < 0)
     {
-      return elem_get(tree, node->right, elem); 
+      return elem_get(tree, node->right, elem);
     }
   else return node;
 }
@@ -150,19 +153,19 @@ node_t *elem_get (tree_t *tree, node_t *node, elem_t elem)
 
 node_t *_new_node( tree_key_t key,elem_t elem)
 {
-  node_t *n = calloc(1, sizeof(node_t));
-  
+  node_t *n = (node_t*)calloc(1, sizeof(node_t));
+
   n->elem = elem;
   n->key = key;
- 
+
   return n;
-  
+
 }
 
 
 int _count_children(node_t* node) {
   int sum = 0;
-  
+
   if (node->left != NULL) {
     sum += (_count_children(node->left) + 1);
   }
@@ -176,7 +179,7 @@ int _count_children(node_t* node) {
 
 bool tree_insert_aux(tree_t *tree, node_t **node, tree_key_t key, elem_t elem)
 {
-  
+
   if (tree->comp == NULL)
     {
       if (*node == NULL)
@@ -184,7 +187,7 @@ bool tree_insert_aux(tree_t *tree, node_t **node, tree_key_t key, elem_t elem)
           puts("input");
           *node = _new_node (key, elem);
           puts("node inserted");
-          return true;   
+          return true;
         }
       if ((*node)->elem.i == elem.i)
         {
@@ -194,16 +197,16 @@ bool tree_insert_aux(tree_t *tree, node_t **node, tree_key_t key, elem_t elem)
       else if ((*node)->elem.i > elem.i)
         {
           puts("traversing left");
-          
-          return tree_insert_aux(tree,&(*node)->left, key, elem); 
+
+          return tree_insert_aux(tree,&(*node)->left, key, elem);
         }
       else if ((*node)->elem.i < elem.i)
         {
           puts("traversing right");
-          
-          return tree_insert_aux(tree,&(*node)->right, key, elem); 
+
+          return tree_insert_aux(tree,&(*node)->right, key, elem);
         }
-      
+
     }
 
   if (tree->comp != NULL) {
@@ -211,23 +214,24 @@ bool tree_insert_aux(tree_t *tree, node_t **node, tree_key_t key, elem_t elem)
       {
         if (tree->copy != NULL)
           {
-            elem_t copy_v = tree->copy(elem);
-            (*node) = _new_node(key, copy_v); 
+          	// TODO
+            //elem_t copy_v = tree->copy(elem);
+            (*node) = _new_node(key, elem);
           }
         else
           {
             *node = _new_node(key, elem);
-            return true;   
+            return true;
           }
       }
     if (tree->comp((*node)->elem, elem) == -1)
       {
-        
+
         tree_insert_aux(tree, &(*node)->left, key, elem);
       }
     else if(tree->comp((*node)->elem, elem) == 1)
       {
-        tree_insert_aux(tree, &(*node)->right, key, elem);    
+        tree_insert_aux(tree, &(*node)->right, key, elem);
       }
     else if(tree->comp((*node)->elem, elem) == 0)
       {
@@ -235,7 +239,7 @@ bool tree_insert_aux(tree_t *tree, node_t **node, tree_key_t key, elem_t elem)
       }
   }
   return false;
-}  
+}
 
 
 
@@ -243,7 +247,7 @@ bool tree_insert_aux(tree_t *tree, node_t **node, tree_key_t key, elem_t elem)
 
 int int_cmp(elem_t a, elem_t b)
 {
-  return a.i - b.i; 
+  return a.i - b.i;
 }
 
 
@@ -251,7 +255,7 @@ tree_t* tree_new(element_copy_fun element_copy, key_free_fun key_free, element_f
 {
   tree_t *tree = calloc(1, sizeof(tree_t));
 
-  
+
   if (element_copy) {
     tree->copy = element_copy;
   }
@@ -333,7 +337,7 @@ int tree_has_key_aux (tree_t *tree, node_t *node1, tree_key_t key)
     {
       return 1;
     }
- 
+
   if (tree->comp(node1->key, key) > 0)
     {
       puts("key smaller than tree-key" );
@@ -348,8 +352,8 @@ int tree_has_key_aux (tree_t *tree, node_t *node1, tree_key_t key)
     {
       puts("key exists" );
       return 0;
-    }   
- 
+    }
+
   puts("node doesnt exist" );
   return 1;
 }
@@ -374,10 +378,10 @@ bool tree_has_key(tree_t *tree, tree_key_t key)
 
 
 
-bool tree_get(tree_t *tree, tree_key_t key, elem_t *result)
+bool tree_get(tree_t *tree, tree_key_t key1, elem_t *result)
 {
-  result = NULL;
-  
+  //result = NULL;
+
   if (tree == NULL || tree->root == NULL)
     {
       printf("%s\n","tree is empty" );
@@ -386,7 +390,7 @@ bool tree_get(tree_t *tree, tree_key_t key, elem_t *result)
   node_t *node = tree->root;
   while (node != NULL)
     {
-      int res = tree->comp(node->key, key);
+      int res = tree->comp(node->key, key1);
       if (res > 0)
         {
           printf("%s\n","node bigger" );
@@ -399,10 +403,10 @@ bool tree_get(tree_t *tree, tree_key_t key, elem_t *result)
         }
       else {
         printf("%s\n","key exists" );
-        result = &node->elem;
+        *result = node->elem;
         printf("%d\n",(result->i));
         return true;
-      }   
+      }
     }
   printf("%s\n","node doesnt exist" );
   return false;
@@ -424,12 +428,12 @@ bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 {
     node_t **cursor = &tree->root;
     node_t **node = get_node(tree, cursor, key);
-   
+
     if(node == NULL || *node == NULL)
       { puts("hasjhop");
         return false;
       }
-     
+
 
     node_t *remove_node = *node;
 
@@ -475,12 +479,12 @@ void print_tree_aux (tree_t *tree, node_t *node)
   if (node == NULL)
     {
       return;
-        
+
     }
   while (node != NULL)
     {
       printf("%s", "key:");
-      printf("%d\n", node->key.i );
+      printf("%s\n", node->key.p );
       print_tree_aux(tree, node->left);
       print_tree_aux(tree, node->right);
       return;
@@ -519,12 +523,12 @@ tree_t *tree_balance(tree_t *tree)
 
   tree_t *NewTree = tree_new(tree->copy,tree->free_key ,tree->free_elem ,tree->comp);
   tree_balance_helper(NewTree,list_of_keys,list_of_elements,0,size-1);
-  
+
 
   tree_t *tmp = tree;
   tree = NewTree;
   NewTree = tmp;
-  
+
   tree_delete(NewTree,false,false);
 
   free(list_of_keys);
@@ -585,7 +589,7 @@ void apply_in_order (node_t *node, key_elem_apply_fun fun, void *data, bool *suc
       apply_in_order(node->left, fun, data, success);
       tmp = fun(node->key, node->elem, data);
       if (tmp) {
-        *success = true;  
+        *success = true;
       }
       apply_in_order(node->right, fun, data, success);
       return ;
@@ -604,7 +608,7 @@ void apply_post_order (node_t *node, key_elem_apply_fun fun, void *data, bool *s
    {
      apply_post_order(node->left, fun, data, success);
      apply_post_order(node->right, fun, data, success);
-    
+
      tmp = fun(node->key, node->elem, data);
       if (tmp)
        {
@@ -613,7 +617,7 @@ void apply_post_order (node_t *node, key_elem_apply_fun fun, void *data, bool *s
      return;
    }
   else return;
-  
+
 }
 
 void apply_pre_order (node_t *node, key_elem_apply_fun fun, void *data, bool *success)
@@ -644,7 +648,7 @@ bool tree_apply(tree_t *tree, enum tree_order order, key_elem_apply_fun fun, voi
     {
       apply_in_order(tree->root, fun, data, &success);
       return success;
-      
+
   }
    if (order == 1)
     {
@@ -654,7 +658,8 @@ bool tree_apply(tree_t *tree, enum tree_order order, key_elem_apply_fun fun, voi
     if (order == -1)
     {
       apply_pre_order(tree->root, fun, data, &success);
-      return success; 
+      return success;
   }
     else return false;
 }
+
