@@ -17,7 +17,6 @@ extern char* strdup(const char*); //behålla denna?
 
 typedef struct node
 {
-  struct tree *tree;
   elem_t elem;
   tree_key_t key;
   struct node* left;
@@ -43,29 +42,29 @@ typedef bool(*traverse_func)(node_t *node, void *p);
 //TODO: ADDERA IN INTERNAL FUNCTIONS NÄR DET BEHÖVS...
 // - - - - - -
 /*
-node_t *get_node_aux(tree_t *tree, node_t **cursor, tree_key_t key)
-{
+  node_t *get_node_aux(tree_t *tree, node_t **cursor, tree_key_t key)
+  {
   if (tree ->comp((*cursor)->key, key) == 0)
-    {
-      puts("returnera cursor");
-      return *cursor;
-    }
+  {
+  puts("returnera cursor");
+  return *cursor;
+  }
 
   while (tree->comp((*cursor)->key, key)  != 0)
-    {
-       puts("om inte == 0" );
-       if (tree->comp((*cursor)->key, key) > 0)
-        {
-           puts("traverserar right");
-           get_node_aux(tree, &(*cursor)->right, key);
-        }
-       else if (tree->comp((*cursor)->key, key) < 0) {
-        puts("traverserar");
-        get_node_aux(tree, &(*cursor)->left, key);
-      }
-    }
+  {
+  puts("om inte == 0" );
+  if (tree->comp((*cursor)->key, key) > 0)
+  {
+  puts("traverserar right");
+  get_node_aux(tree, &(*cursor)->right, key);
+  }
+  else if (tree->comp((*cursor)->key, key) < 0) {
+  puts("traverserar");
+  get_node_aux(tree, &(*cursor)->left, key);
+  }
+  }
   return *cursor;
-}
+  }
 
 */
 node_t **get_node(tree_t *tree ,node_t **cursor,  tree_key_t key)
@@ -135,7 +134,7 @@ bool trav_fun (tree_t *tree, traverse_func fun, void *data)
 
 
 
-  
+
 node_t *elem_get (tree_t *tree, node_t *node, elem_t elem)
 {
   if (tree->comp(node->elem, elem) > 0)
@@ -214,7 +213,7 @@ bool tree_insert_aux(tree_t *tree, node_t **node, tree_key_t key, elem_t elem)
       {
         if (tree->copy != NULL)
           {
-          	// TODO
+            // TODO
             //elem_t copy_v = tree->copy(elem);
             (*node) = _new_node(key, elem);
           }
@@ -274,35 +273,33 @@ tree_t* tree_new(element_copy_fun element_copy, key_free_fun key_free, element_f
   return tree;
 }
 
-void tree_delete_helper(node_t *node, bool delete_keys, bool delete_elements)
+void tree_delete_helper(node_t *node, bool delete_keys, bool delete_elements, key_free_fun free_key, element_free_fun free_elem)
 {
-	if (node == NULL)
-	{
-		return;
-	}
-	else
-	{
-		tree_delete_helper(node->left,delete_keys,delete_elements);
-		tree_delete_helper(node->right, delete_keys, delete_elements);
-		if (delete_keys)
-		{
-                  ///PROBLEM DEN STANNAR HÄR
-                  node->tree->free_key(node->key);
-		}
-		if (delete_elements)
-		{
-			node->tree->free_elem(node->elem);
-		}
-		free(node);
-	}
+  if (node == NULL)
+    {
+      return;
+    }
+  else
+    {
+      tree_delete_helper(node->left, delete_keys, delete_elements, free_key, free_elem);
+      tree_delete_helper(node->right, delete_keys, delete_elements, free_key, free_elem);
+      if (delete_keys)
+        {
+          free_key(node->key);
+        }
+      if (delete_elements)
+        {
+          free_elem(node->elem);
+        }
+      free(node);
+    }
 }
 
 void tree_delete(tree_t *tree, bool delete_keys, bool delete_elements)
 {
-	// remove tree & free up memory
-	tree_delete_helper(tree->root, delete_keys, delete_elements);
-        free(tree);
-
+  // remove tree & free up memory
+  tree_delete_helper(tree->root, delete_keys, delete_elements, tree->free_key, tree->free_elem);
+  free(tree);
 }
 
 
@@ -418,59 +415,59 @@ node_t *balance_remove_node(node_t *node)
 {
   node_t *cursor = node;
   while (cursor->left != NULL)
-  {
-    cursor = cursor->left;
-  }
+    {
+      cursor = cursor->left;
+    }
   return cursor;
 }
 
 bool tree_remove(tree_t *tree, tree_key_t key, elem_t *result)
 {
-    node_t **cursor = &tree->root;
-    node_t **node = get_node(tree, cursor, key);
+  node_t **cursor = &tree->root;
+  node_t **node = get_node(tree, cursor, key);
 
-    if(node == NULL || *node == NULL)
-      { puts("hasjhop");
-        return false;
-      }
+  if(node == NULL || *node == NULL)
+    { puts("hasjhop");
+      return false;
+    }
 
 
-    node_t *remove_node = *node;
+  node_t *remove_node = *node;
 
-    if(remove_node->right == NULL && remove_node->left == NULL)
-      {
-        puts("hejhop");
-        *result =remove_node->elem;
-        free(remove_node);
-        *node = NULL;
-        return true;
-      }
-    else if (remove_node->right == NULL)
-      {
-         puts("hare");
-        *result = remove_node->elem;
-        *node = remove_node->left;
-        free(remove_node);
-        return true;
-      }
-    else if (remove_node->left == NULL)
-      {
-         puts("hullaahulaa");
-        *result = remove_node->elem;
-        *node = remove_node->right;
-        free(remove_node);
-        return true;
-      }
-    else
-      {
-         puts("waxa");
-        node_t *tmp = balance_remove_node(remove_node->right);
-        *result = remove_node->elem;
-        tmp->left = remove_node->left;
-        *node = tmp;
-        free(remove_node);
-      }
-    return false;
+  if(remove_node->right == NULL && remove_node->left == NULL)
+    {
+      puts("hejhop");
+      *result =remove_node->elem;
+      free(remove_node);
+      *node = NULL;
+      return true;
+    }
+  else if (remove_node->right == NULL)
+    {
+      puts("hare");
+      *result = remove_node->elem;
+      *node = remove_node->left;
+      free(remove_node);
+      return true;
+    }
+  else if (remove_node->left == NULL)
+    {
+      puts("hullaahulaa");
+      *result = remove_node->elem;
+      *node = remove_node->right;
+      free(remove_node);
+      return true;
+    }
+  else
+    {
+      puts("waxa");
+      node_t *tmp = balance_remove_node(remove_node->right);
+      *result = remove_node->elem;
+      tmp->left = remove_node->left;
+      *node = tmp;
+      free(remove_node);
+    }
+  return false;
 }
 
 void print_tree_aux (tree_t *tree, node_t *node)
@@ -484,7 +481,7 @@ void print_tree_aux (tree_t *tree, node_t *node)
   while (node != NULL)
     {
       printf("%s", "key:");
-      printf("%s\n", node->key.p );
+      printf("%s\n", (char *)node->key.p );
       print_tree_aux(tree, node->left);
       print_tree_aux(tree, node->right);
       return;
@@ -601,21 +598,21 @@ void apply_post_order (node_t *node, key_elem_apply_fun fun, void *data, bool *s
 {
   bool tmp = false;
   if (node == NULL)
-  {
-    return;
-  }
+    {
+      return;
+    }
   if (node != NULL)
-   {
-     apply_post_order(node->left, fun, data, success);
-     apply_post_order(node->right, fun, data, success);
+    {
+      apply_post_order(node->left, fun, data, success);
+      apply_post_order(node->right, fun, data, success);
 
-     tmp = fun(node->key, node->elem, data);
+      tmp = fun(node->key, node->elem, data);
       if (tmp)
-       {
-         *success = true;
-       }
-     return;
-   }
+        {
+          *success = true;
+        }
+      return;
+    }
   else return;
 
 }
@@ -624,19 +621,19 @@ void apply_pre_order (node_t *node, key_elem_apply_fun fun, void *data, bool *su
 {
   bool tmp = false;
   if (node == NULL)
-  {
-    return;
-  }
+    {
+      return;
+    }
   if (node != NULL)
-   {
-     tmp = fun(node->key, node->elem, data);
-     if (tmp) {
-       *success = true;
-     }
-     apply_post_order(node->left, fun, data, success);
-     apply_post_order(node->right, fun, data, success);
-     return;
-   }
+    {
+      tmp = fun(node->key, node->elem, data);
+      if (tmp) {
+        *success = true;
+      }
+      apply_post_order(node->left, fun, data, success);
+      apply_post_order(node->right, fun, data, success);
+      return;
+    }
   else return;
 }
 
@@ -649,17 +646,16 @@ bool tree_apply(tree_t *tree, enum tree_order order, key_elem_apply_fun fun, voi
       apply_in_order(tree->root, fun, data, &success);
       return success;
 
-  }
-   if (order == 1)
+    }
+  if (order == 1)
     {
       apply_post_order(tree->root, fun, data, &success);
       return success;
-  }
-    if (order == -1)
+    }
+  if (order == -1)
     {
       apply_pre_order(tree->root, fun, data, &success);
       return success;
-  }
-    else return false;
+    }
+  else return false;
 }
-

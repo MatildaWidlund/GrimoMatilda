@@ -28,6 +28,10 @@ struct action {
     struct{item_t *old; item_t *new;};
   };
 };
+
+void shelf_free(elem_t shelf);
+
+
 /* TREE COPY COMPARE FREE*/
 
 // Måste göra funktionerna
@@ -49,9 +53,17 @@ void free_k(elem_t key)
   free(key.p);
 }
 
+void item_free(item_t *item)
+{
+  free(item->desc);
+  list_delete(item->shelves, true);
+  free(item);
+}
+
+/// TODO: this function is not necessary, can be replaced with item_free directly
 void free_e(elem_t elem)
 {
-  free(elem.p);
+  item_free(elem.p);
 }
 
 int tree_compare(elem_t a, elem_t b)
@@ -67,21 +79,18 @@ int tree_compare(elem_t a, elem_t b)
   else return 0; 
 }
 
-/* */
-/* SHELF: COPY / FREE / COMPARE */
 elem_t shelf_copy(elem_t shelf)
 {
-  shelf_t *from = (shelf_t*)shelf.p;
-  shelf_t *to = (shelf_t*)calloc(1, sizeof(shelf_t));
-  *to = *from;
-
-  elem_t result = { .p = to};
-  return result;
+  /// FIXME: verify no copy function needed
+  /// FIXME: old copy function exists in git history
+  return shelf;
 }
 
 void shelf_free(elem_t shelf)
 {
-  free(shelf.p);
+  shelf_t *s = shelf.p;
+  free(s->name);
+  free(s);
 }
 
 int shelf_compare(elem_t a, elem_t b) //size_t??? int???
@@ -102,9 +111,7 @@ int shelf_compare(elem_t a, elem_t b) //size_t??? int???
 
 /* END OF SHELF: COPY / FREE / COMPARE */
 
-
-
-
+  
 shelf_t * create_shelf(char *name, int amount)
 {
   shelf_t *shelf = (shelf_t*)calloc(1, sizeof(shelf_t));
@@ -116,6 +123,12 @@ shelf_t * create_shelf(char *name, int amount)
     }
   return shelf;
 }
+
+shelf_t * copy_shelf(shelf_t *original)
+{
+  return create_shelf(strdup(original->name), original->amount);
+}
+
 
 
 item_t *create_item(char *name, char *desc, int price, list_t *shelves)
@@ -156,11 +169,13 @@ item_t *get_item_on_shelf(tree_t *tree, char* shelf_name) //elem_t?
 
           if (strcmp(shelf_name, other_shelf_name)==0)
             {
+              free(t_keys);
               return item;
 
             }
         }
     }
+  free(t_keys);
   return NULL;
 }
 
@@ -326,7 +341,9 @@ void add_new_item(tree_t *tree, char *name)
       shelf_name = ask_question_shelf("Hylla: ");
     }
   int amount = ask_question_int("Antal: ");
+
   shelf_t *shelf = create_shelf(shelf_name, amount);
+
   elem_t elem;
   elem.p  = shelf;
   list_t *shelves = list_new(shelf_copy, shelf_free, shelf_compare);
@@ -486,6 +503,8 @@ item_t *select_item(tree_t *tree)
               elem_t elem;
               elem.p = item;
               tree_get(tree, keys[number -1], &elem);
+              free(str);
+              free(keys);
               return (item_t*)elem.p;
             }
           break;
@@ -495,7 +514,10 @@ item_t *select_item(tree_t *tree)
         {
           done = true;
         }
+
+      free(str);
     }
+  free(keys);
   return NULL;
 }
 
@@ -564,24 +586,19 @@ item_t *copy_item(item_t *original)
   char *name = strdup(original->name);
   char *desc = strdup(original->desc);
 
-  list_t* shelves = list_new(shelf_copy, shelf_free, shelf_compare);
-  int length = list_length(original->shelves);
+  list_t* copy_of_shelves = list_new(shelf_copy, shelf_free, shelf_compare);
 
+  int length = list_length(original->shelves);
   for (int i = 0; i < length; ++i)
     {
-      shelf_t *source = NULL;
       elem_t elem;
       list_get(original->shelves, i, &elem);
-      source = elem.p;
-      char *name = strdup(source->name);
-      int amount = source->amount;
 
-      shelf_t *copy = create_shelf(name, amount);
-      elem_t element;
-      element.p = copy;
-      list_append(shelves, element);
+      list_append(copy_of_shelves, (elem_t) {
+          .p = copy_shelf((shelf_t *)elem.p)
+        });
     }
-  item_t *item = create_item(name, desc, original->price, shelves);
+  item_t *item = create_item(name, desc, original->price, copy_of_shelves);
   return item;
 }
 
@@ -733,7 +750,12 @@ void event_loop(tree_t* tree)
     }
   }
   while (!quit);
-  return;
+  
+  if (undo.type != NOTHING)
+    {
+      free(undo.old->name);
+      item_free(undo.old);
+    }
 }
 
 
