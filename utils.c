@@ -49,7 +49,7 @@ bool is_number(char* str) {
 char ask_question_char(char* question) {
   answer_t a = ask_question(question, is_char, (convert_func) strdup);
   char c = *(a.s);
-
+  free(a.s);
   return c;
 }
 

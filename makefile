@@ -1,4 +1,4 @@
-FLAGS_GCC=-Wall -g -std=c11
+FLAGS_GCC=-Wall -g -std=c11 -pedantic 
 
 CMPLR=gcc
 CMPLR_FLAGS=$(FLAGS_GCC)
