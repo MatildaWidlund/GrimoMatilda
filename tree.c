@@ -37,36 +37,6 @@ typedef bool(*traverse_func)(node_t *node, void *p);
 #define UNUSED(x) (void)(x)
 
 
-/* INTERNAL FUNCTIONS */
-// - - - - - -
-//TODO: ADDERA IN INTERNAL FUNCTIONS NÄR DET BEHÖVS...
-// - - - - - -
-/*
-  node_t *get_node_aux(tree_t *tree, node_t **cursor, tree_key_t key)
-  {
-  if (tree ->comp((*cursor)->key, key) == 0)
-  {
-  puts("returnera cursor");
-  return *cursor;
-  }
-
-  while (tree->comp((*cursor)->key, key)  != 0)
-  {
-  puts("om inte == 0" );
-  if (tree->comp((*cursor)->key, key) > 0)
-  {
-  puts("traverserar right");
-  get_node_aux(tree, &(*cursor)->right, key);
-  }
-  else if (tree->comp((*cursor)->key, key) < 0) {
-  puts("traverserar");
-  get_node_aux(tree, &(*cursor)->left, key);
-  }
-  }
-  return *cursor;
-  }
-
-*/
 node_t **get_node(tree_t *tree ,node_t **cursor,  tree_key_t key)
 {
   if (*cursor == NULL) return NULL;
@@ -179,35 +149,6 @@ int _count_children(node_t* node) {
 bool tree_insert_aux(tree_t *tree, node_t **node, tree_key_t key, elem_t elem)
 {
 
-  if (tree->comp == NULL)
-    {
-      if (*node == NULL)
-        {
-          puts("input");
-          *node = _new_node (key, elem);
-          puts("node inserted");
-          return true;
-        }
-      if ((*node)->elem.i == elem.i)
-        {
-          puts("duplicate found");
-          return false;
-        }
-      else if ((*node)->elem.i > elem.i)
-        {
-          puts("traversing left");
-
-          return tree_insert_aux(tree,&(*node)->left, key, elem);
-        }
-      else if ((*node)->elem.i < elem.i)
-        {
-          puts("traversing right");
-
-          return tree_insert_aux(tree,&(*node)->right, key, elem);
-        }
-
-    }
-
   if (tree->comp != NULL) {
     if(*node == NULL)
       {
@@ -223,12 +164,12 @@ bool tree_insert_aux(tree_t *tree, node_t **node, tree_key_t key, elem_t elem)
             return true;
           }
       }
-    if (tree->comp((*node)->elem, elem) == -1)
+    if (tree->comp((*node)->elem, elem) < 0)
       {
 
         tree_insert_aux(tree, &(*node)->left, key, elem);
       }
-    else if(tree->comp((*node)->elem, elem) == 1)
+    else if(tree->comp((*node)->elem, elem) < 0)
       {
         tree_insert_aux(tree, &(*node)->right, key, elem);
       }
@@ -283,13 +224,14 @@ void tree_delete_helper(node_t *node, bool delete_keys, bool delete_elements, ke
     {
       tree_delete_helper(node->left, delete_keys, delete_elements, free_key, free_elem);
       tree_delete_helper(node->right, delete_keys, delete_elements, free_key, free_elem);
+
+      if (delete_elements)
+        {
+         free_elem(node->elem);
+        }
       if (delete_keys)
         {
           free_key(node->key);
-        }
-      if (delete_elements)
-        {
-          free_elem(node->elem);
         }
       free(node);
     }
@@ -377,33 +319,63 @@ bool tree_has_key(tree_t *tree, tree_key_t key)
 
 bool tree_get(tree_t *tree, tree_key_t key1, elem_t *result)
 {
-  //result = NULL;
-
   if (tree == NULL || tree->root == NULL)
     {
-      printf("%s\n","tree is empty" );
+      
       return false;
     }
   node_t *node = tree->root;
   while (node != NULL)
     {
-      int res = tree->comp(node->key, key1);
-      if (res > 0)
-        {
-          printf("%s\n","node bigger" );
-          node = node->right;
+      if (tree->comp == NULL) {
+        
+        int res = int_cmp(node->key, key1);
+        if (res == 0) {
+          return false;
         }
-      else if (res < 0)
-        {
-          printf("%s\n","node smaller" );
-          node = node->left;
-        }
-      else {
-        printf("%s\n","key exists" );
-        *result = node->elem;
-        printf("%d\n",(result->i));
-        return true;
+        else if (res > 0)
+          {
+            
+            node = node->right;
+          
+          }
+        else if (res < 0)
+          {
+            
+            node = node->left;
+          }
+        else
+          {
+            
+            *result = node->elem;
+            printf("%d\n",(result->i));
+            return true;
+      
+          }
       }
+      if (tree->comp != NULL) {
+      
+        
+        int res = tree->comp(node->key, key1);
+      
+        if (res > 0)
+          {
+      
+            node = node->right;
+          }
+        else if (res < 0)
+          {
+      
+            node = node->left;
+          }
+        else {
+      
+          *result = node->elem;
+          printf("%d\n",(result->i));
+          return true;
+        }
+      }
+        
     }
   printf("%s\n","node doesnt exist" );
   return false;
