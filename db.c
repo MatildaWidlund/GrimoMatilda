@@ -68,15 +68,8 @@ void free_e(elem_t elem)
 
 int tree_compare(elem_t a, elem_t b)
 {    
-  if (strcmp((char*)a.p, (char*)b.p) > 0)
-    {
-      return 1 ;
-    }
-  else if (strcmp((char*)a.p, (char*)b.p) < 0)
-      {
-      return -1;
-    }
-  else return 0; 
+  return strcmp((char*)a.p, (char*)b.p);
+  
 }
 
 elem_t shelf_copy(elem_t shelf)
@@ -101,7 +94,7 @@ int shelf_compare(elem_t a, elem_t b) //size_t??? int???
     }
   else if (strcmp((char*)a.p, (char*)b.p) < 0)
     {
-      return 1;
+      return -1;
     }
   else return 0;
 }
@@ -212,7 +205,7 @@ void add_shelf_to_item2(tree_t *tree, char *item_name)
       item = (item_t*)elem.p;
       tree_key_t key;
       key.p = item_name;
-      tree_get(tree, key, &elem); // HELP-- ska vara av typ tree_key_t
+      tree_get(tree, key, &elem); 
     }
   int amount = ask_question_int("Antal: ");
 
@@ -378,6 +371,12 @@ void add_item(tree_t *tree)
 
   return;
 }
+
+void add_to_db(tree_t *db, tree_key_t name, elem_t elem)
+{
+  tree_insert(db, name, elem);
+}
+
 
 
 void remove_item()
@@ -758,12 +757,166 @@ void event_loop(tree_t* tree)
     }
 }
 
+void shelf_aux(FILE* persistance, list_t *shelves)
+{
+  int length = list_length(shelves);
+  char buf_siz[255];
+  snprintf(buf_siz, 255, "%d", length);
+  fputs(buf_siz, persistance);
+  fputs("\n", persistance);
 
+  for (int i = 0; i < length; i++)
+    {
+      elem_t elem;
+      list_get(shelves, i, &elem);
+      char buf_siz[255];
+      char *name = ((shelf_t*)elem.p)->name;
+      fputs(name, persistance);
+      fputs("\n", persistance);
+      int amm = ((shelf_t*)elem.p)->amount;
+      snprintf(buf_siz, 255, "%d", amm);
+      fputs(buf_siz, persistance);
+      fputs("\n", persistance);
+    }
+}
+
+
+void savedb_aux(elem_t *elem, FILE *persistance, int size)
+{
+  char buf_siz[255];
+  snprintf(buf_siz, 255, "%d", size);
+  fputs(buf_siz, persistance);
+  fputs("\n", persistance);
+  for (int i = 0; i < size; i++)
+    {
+      elem_t to_save = elem[i];
+      char *name = ((item_t*)to_save.p)->name;
+      fputs(name, persistance);
+      fputs("\n", persistance);
+      char *desc = ((item_t*)to_save.p)->desc;
+      fputs(desc, persistance);
+      fputs("\n", persistance);
+      int price = ((item_t*)to_save.p)->price;
+      char charprice[255];
+      snprintf(charprice, 255, "%d", price);
+      fputs(charprice, persistance);
+      fputs("\n", persistance);
+      shelf_aux(persistance, ((item_t*)to_save.p)->shelves);   
+    }
+}
+
+void savedb(tree_t *db)
+{
+ 
+  elem_t *elem = tree_elements(db);
+  FILE *persistance;
+  persistance = fopen("dbpersistance", "w");
+  savedb_aux(elem, persistance, tree_size(db));
+}
+
+char* new_line_help(char* a)
+{
+  int i = strlen(a)-1;
+  a[i] = '\0';
+  return a;
+  
+}
+
+void read_db_aux(tree_t *db, FILE *persistance)
+{
+  size_t siz = 0;
+  char *line = NULL;
+  getline(&line, &siz, persistance);
+  int size = atoi(line);
+  printf("%s%d\n","on line 830, size is", size );
+ 
+  
+  for (int i = 0; i < size; i++)
+    {
+      item_t *item = calloc(1, sizeof(item));
+      siz = 0;
+      line = NULL;
+      getline(&line, &siz, persistance);
+      char* name = new_line_help(strdup(line));
+      printf("%s%s\n","on line 839, name is", name );
+      item->name = name;
+
+      siz = 0;
+      line = NULL;
+      getline(&line, &siz, persistance);
+      char *desc = new_line_help(strdup(line));
+      printf("%s%s\n","on line 844, desc is", desc );
+      item->desc = desc;
+
+      siz = 0;
+      line = NULL;
+      getline(&line, &siz, persistance);
+      int price = atoi(line);
+      printf("%s%d\n","on line 849, price is", price );
+      item->price = price;
+
+      siz = 0;
+      line = NULL;
+      getline(&line, &siz, persistance);
+      int shelf_ammount = atoi(line);
+       printf("%s%d\n","on line 854, shelf_ammount is", shelf_ammount );
+
+      list_t *list = list_new(shelf_copy, shelf_free, shelf_compare);
+      printf("%s%s\n","on line 858, list is on pointer", ((char*)list));
+      
+      for (int i = 0; i < shelf_ammount; i++)
+        {
+          shelf_t *shelf = calloc(1, sizeof(shelf));
+          siz = 0;
+          line = NULL;
+          getline(&line, &siz, persistance);
+          char *shelf_name = new_line_help(strdup(line));
+          printf("%s%s\n","on line 864, shelfname is", shelf_name);
+          shelf->name = shelf_name;
+
+          siz = 0;
+          line = NULL;
+          getline(&line, &siz, persistance);
+          int shelf_amm = atoi(line);
+          printf("%s%d\n","on line 869, shelf_amm is", shelf_amm);
+          shelf->amount = shelf_amm;
+
+          if (i == 0)
+            {
+            item->shelves = list;
+          }
+          
+          elem_t list_e = {.p = shelf};
+          list_append(list ,list_e);
+          printf("%s%s\n","this is the list", ((char*)&list));
+        }
+
+      
+      elem_t elem = {.p= item};
+      tree_key_t key = {.p = item->name};
+      
+      tree_insert(db, key, elem);
+     
+    }
+
+  
+}
+
+void read_db(tree_t *db)
+{
+  FILE *persistance;
+  persistance = fopen("dbpersistance", "r");
+  read_db_aux(db, persistance);
+
+
+}
 int main(int argc, char* argv[])
 {
-  tree_t *tree = tree_new(tree_copy, free_k, free_e, tree_compare);
+  tree_t *tree= tree_new(tree_copy, free_k, free_e, tree_compare);
+  read_db(tree);
   event_loop(tree);
-  tree_delete(tree, true, true); // eller ska det vara false?
+  savedb(tree);
+  tree_delete(tree, true, true);
   return 0;
 }
 
