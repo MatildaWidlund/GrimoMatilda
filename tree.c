@@ -148,36 +148,24 @@ int _count_children(node_t* node) {
 
 bool tree_insert_aux(tree_t *tree, node_t **node, tree_key_t key, elem_t elem)
 {
-
-  if (tree->comp != NULL) {
-    if(*node == NULL)
-      {
-        if (tree->copy != NULL)
-          {
-            // TODO
-            //elem_t copy_v = tree->copy(elem);
-            (*node) = _new_node(key, elem);
-          }
-        else
-          {
-            *node = _new_node(key, elem);
-            return true;
-          }
-      }
-    if (tree->comp((*node)->elem, elem) < 0)
-      {
-
-        tree_insert_aux(tree, &(*node)->left, key, elem);
-      }
-    else if(tree->comp((*node)->elem, elem) < 0)
-      {
-        tree_insert_aux(tree, &(*node)->right, key, elem);
-      }
-    else if(tree->comp((*node)->elem, elem) == 0)
-      {
-        return false;
-      }
-  }
+  if(*node == NULL)
+    {
+      *node = _new_node(key, elem);
+      return true;   
+    }
+  if (tree->comp((*node)->key, key) < 0)
+    {
+      tree_insert_aux(tree, &(*node)->left, key, elem);
+    }
+  else if(tree->comp((*node)->key, key) > 0)
+    {
+      tree_insert_aux(tree, &(*node)->right, key, elem);
+    }
+  else if(tree->comp((*node)->key, key) == 0)
+    {
+      return false;
+    }
+  
   return false;
 }
 
@@ -280,20 +268,24 @@ int tree_has_key_aux (tree_t *tree, node_t *node1, tree_key_t key)
   if (tree->comp(node1->key, key) > 0)
     {
       puts("key smaller than tree-key" );
-      tree_has_key_aux(tree, node1->left, key);
+      tree_has_key_aux(tree, node1->right, key);
     }
   else if (tree->comp(node1->key, key) < 0)
     {
       puts("key bigger than tree->key" );
-      tree_has_key_aux(tree, node1->right, key);
+      tree_has_key_aux(tree, node1->left, key);
     }
-  else
+  else if (tree->comp(node1->key, key) == 0)
     {
+    
       puts("key exists" );
       return 0;
+      
     }
-
+  else{
   puts("node doesnt exist" );
+  return 1;
+  }
   return 1;
 }
 
@@ -309,10 +301,11 @@ bool tree_has_key(tree_t *tree, tree_key_t key)
     }
   else if (tree_has_key_aux(tree, tree->root, key) == 0)
     {
+      puts("tree has the key, screw your function");
       return true;
     }
-
-  else return false;
+  puts("wey, den har inte key");
+  return false;
 }
 
 

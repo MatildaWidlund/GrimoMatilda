@@ -60,7 +60,7 @@ void item_free(item_t *item)
   free(item);
 }
 
-/// TODO: this function is not necessary, can be replaced with item_free directly
+
 void free_e(elem_t elem)
 {
   item_free(elem.p);
@@ -143,19 +143,19 @@ item_t *get_item_on_shelf(tree_t *tree, char* shelf_name) //elem_t?
   for (int i = 0; i < t_size; ++i)
     {
       tree_key_t node_name = t_keys[i];
-      item_t *item = NULL;
+      item_t *item;
       elem_t elem;
       tree_get(tree, node_name, &elem);
       item = (item_t*)elem.p;
       
-      list_t *shelves = item->shelves;
-      int length = list_length(shelves);
+      list_t *shelves1 = item->shelves;
+      int length = list_length(shelves1);
 
       for (int j = 0; j < length; ++j)
         {
           shelf_t *shelf_item = NULL;
           elem_t element;
-          list_get(shelves, j, &element);
+          list_get(shelves1, j, &element);
           shelf_item = (shelf_t*)element.p;
           
           char *other_shelf_name = shelf_item->name;
@@ -172,27 +172,37 @@ item_t *get_item_on_shelf(tree_t *tree, char* shelf_name) //elem_t?
   return NULL;
 }
 
-void add_shelf_to_item2(tree_t *tree, char *item_name)
+shelf_t *get_shelf_by_name(list_t *list, char *shelf_name)
 {
-  char *shelf_name = NULL;
-  item_t *item = NULL;
-  bool shelf_exists = false;
-  bool available_shelf = false;
-  elem_t elem;
-
-  while (!available_shelf)
+  for (int i = list_length(list)-1; i >= 0; --i)
     {
-      shelf_name = ask_question_shelf("Hyllplats: ");
-      item = get_item_on_shelf(tree, shelf_name);
+      elem_t result; 
+      list_get(list, i, &result);
+      shelf_t *shelf = result.p;
+      
+      if (strcmp(shelf_name, shelf->name) == 0) return shelf;
+    }
+
+  return NULL;
+}
+
+void add_shelf_to_item2(tree_t *tree, item_t *item)
+{
+  shelf_t *shelf = NULL;
+
+  while (shelf == NULL)
+    {
+      char *shelf_name = ask_question_shelf("Hyllplats: ");
+      item_t *owner = get_item_on_shelf(tree, shelf_name);
 
       if (item == NULL)
         {
-          available_shelf = true;
+          shelf = create_shelf(shelf_name, 0);
+          list_append(item->shelves, (elem_t) { .p = shelf });
         }
-      else if (strcmp(item->name, item_name)== 0)
+      else if (item == owner)
         {
-          available_shelf = true;
-          shelf_exists = true;
+          shelf = get_shelf_by_name(item->shelves, shelf_name);
         }
       else
         {
@@ -200,48 +210,9 @@ void add_shelf_to_item2(tree_t *tree, char *item_name)
           puts("Hyllan är upptagen\n");
         }
     }
-  if (item == NULL)
-    {
-      item = (item_t*)elem.p;
-      tree_key_t key;
-      key.p = item_name;
-      tree_get(tree, key, &elem); 
-    }
+
   int amount = ask_question_int("Antal: ");
-
-  if (shelf_exists)
-    {
-      list_t *shelves = item->shelves;
-      int length = list_length(shelves);
-      shelf_t *shelf = NULL;
-      elem_t element;
-
-      for (int i=0; i < length; ++i)
-        {
-          shelf = (shelf_t*)element.p;
-          list_get(shelves, i, &element);
-
-          if(strcmp(shelf->name, shelf_name)==0)
-            {
-              break;
-            }
-        }
-      shelf->amount += amount;
-    }
-  else
-    {
-      shelf_t *shelf = create_shelf(strdup(shelf_name), amount); // behövs stdup????
-
-      if (shelf != NULL)
-        {
-          elem_t element;
-          element.p = shelf;
-          list_append(item->shelves, element);
-        }
-    }
-  free(shelf_name);
-  return;
-
+  shelf->amount += amount;
 }
 
 void add_shelf_to_item(tree_t *tree, char* item_name)// ska jag ha annan
@@ -339,6 +310,7 @@ void add_new_item(tree_t *tree, char *name)
 
   elem_t elem;
   elem.p  = shelf;
+  
   list_t *shelves = list_new(shelf_copy, shelf_free, shelf_compare);
   list_append(shelves, elem);
 
@@ -362,7 +334,9 @@ void add_item(tree_t *tree)
 
   if (tree_has_key(tree, key))
     {
-      add_shelf_to_item2(tree, name);
+      elem_t result;
+      tree_get(tree, key, &result);
+      add_shelf_to_item2(tree, result.p);
     }
   else
     {
@@ -376,8 +350,6 @@ void add_to_db(tree_t *db, tree_key_t name, elem_t elem)
 {
   tree_insert(db, name, elem);
 }
-
-
 
 void remove_item()
 {
@@ -399,7 +371,6 @@ void undo_edit(struct action* undo)
   new->price = old->price;
   new->shelves = old->shelves;
 
-  free(unused_name);
   free(unused_desc);
   free(unused_shelves);
   free(undo->old);
@@ -738,7 +709,9 @@ void event_loop(tree_t* tree)
       undo_action(&undo);
       break;
     case 'H':
+      print_tree(tree);
       list_db(tree);
+      
       break;
     case 'A':
       quit = true;
@@ -833,7 +806,7 @@ void read_db_aux(tree_t *db, FILE *persistance)
   
   for (int i = 0; i < size; i++)
     {
-      item_t *item = calloc(1, sizeof(item));
+      item_t *item = calloc(1, sizeof(item_t));
       siz = 0;
       line = NULL;
       getline(&line, &siz, persistance);
@@ -866,7 +839,7 @@ void read_db_aux(tree_t *db, FILE *persistance)
       
       for (int i = 0; i < shelf_ammount; i++)
         {
-          shelf_t *shelf = calloc(1, sizeof(shelf));
+          shelf_t *shelf = calloc(1, sizeof(shelf_t));
           siz = 0;
           line = NULL;
           getline(&line, &siz, persistance);
@@ -888,7 +861,10 @@ void read_db_aux(tree_t *db, FILE *persistance)
           
           elem_t list_e = {.p = shelf};
           list_append(list ,list_e);
+          
           printf("%s%s\n","this is the list", ((char*)&list));
+          
+          //free(shelf_name);
         }
 
       
@@ -896,6 +872,12 @@ void read_db_aux(tree_t *db, FILE *persistance)
       tree_key_t key = {.p = item->name};
       
       tree_insert(db, key, elem);
+      
+      //free(name);
+      //free(item);
+      //free(desc);
+      //free(list);
+      
      
     }
 
